@@ -175,8 +175,8 @@ export default function BeereelLanding() {
                   {st.value}
                 </span>
                 {st.icon && (
-                  <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
-                    <st.icon className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform shrink-0">
+                    <st.icon size={16} className="w-4 h-4" animateOnHover />
                   </div>
                 )}
               </div>
@@ -324,8 +324,8 @@ export default function BeereelLanding() {
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
-                      <feat.icon className="w-7 h-7 text-slate-950 stroke-[2.5]" />
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform shrink-0">
+                      <feat.icon size={28} className="w-7 h-7 text-slate-950 stroke-[2.5]" animateOnHover />
                     </div>
                     <span className="text-2xl font-black text-amber-400/30 group-hover:text-amber-400/60 transition-colors">
                       {feat.step}
