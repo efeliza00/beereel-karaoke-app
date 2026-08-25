@@ -3,7 +3,7 @@
 import "youtube-video-element";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Mic } from "lucide-react";
+import { Droplet, Mic } from "lucide-react";
 import {
   Maximize2,
   Minimize2,
@@ -29,6 +29,13 @@ import {
   type FloatingReaction,
   type ReactionEmojiId,
 } from "@/components/room/live-reactions";
+import { AnimatePresence, motion } from "motion/react";
+
+export type NectarScore = {
+  nectars: number;
+  title: string;
+  singer: string;
+};
 
 interface StagePlayerProps {
   video: QueueItem | null;
@@ -41,6 +48,8 @@ interface StagePlayerProps {
   reactions?: FloatingReaction[];
   onReactionComplete?: (id: string) => void;
   onAlmostEnded?: () => void;
+  nectarScore?: NectarScore | null;
+  viewerName?: string;
 }
 
 const honeyTheme = {
@@ -60,6 +69,8 @@ export default function StagePlayer({
   reactions = [],
   onReactionComplete,
   onAlmostEnded,
+  nectarScore = null,
+  viewerName,
 }: StagePlayerProps) {
   const mediaRef = useRef<HTMLElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
@@ -262,12 +273,51 @@ export default function StagePlayer({
     <LiveReactions reactions={reactions} onComplete={onReactionComplete} />
   );
 
+  const isSelfScore = nectarScore?.singer === viewerName;
+
+  const nectarOverlay = (
+    <AnimatePresence>
+      {nectarScore && (
+        <motion.div
+          key="nectar-score"
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 260, damping: 22 }}
+          className="absolute inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        >
+          <div className="flex flex-col items-center gap-1.5 text-center px-6">
+            <div className="mb-1 rounded-full flex size-16 items-center justify-center bg-gradient-to-br from-amber-300 to-amber-500 text-slate-950 shadow-xl shadow-amber-500/40">
+              <Droplet
+                className="size-8 fill-slate-950/25"
+                aria-hidden="true"
+              />
+            </div>
+            <p className="text-4xl sm:text-5xl font-black leading-none text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 drop-shadow-lg">
+              +{nectarScore.nectars}
+            </p>
+            <p className="text-sm font-black uppercase tracking-widest text-amber-300">
+              Nectars
+            </p>
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-300">
+              {isSelfScore ? "Your Score" : `${nectarScore.singer}'s Score`}
+            </p>
+            <MarqueeText className="max-w-xs text-sm font-semibold text-slate-400">
+              {nectarScore.title}
+            </MarqueeText>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
   if (!canControl) {
     return (
       <div className="relative w-full aspect-video rounded-2xl border border-amber-500/25 bg-slate-900 overflow-hidden shadow-2xl shadow-amber-500/10 flex flex-col items-center justify-center gap-5 p-6">
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/8 via-transparent to-transparent pointer-events-none" />
         <div className="pointer-events-none absolute -top-24 -left-24 size-64 rounded-full bg-amber-500/10 blur-3xl" />
         {reactionOverlay}
+        {nectarOverlay}
         <MusicPlayer
           key={video.videoId}
           src={`https://www.youtube.com/watch?v=${video.videoId}`}
@@ -345,6 +395,8 @@ export default function StagePlayer({
             <Maximize2 className="size-4" />
           )}
         </button>
+
+        {nectarOverlay}
       </div>
 
       {/* Now Playing — below the frame */}

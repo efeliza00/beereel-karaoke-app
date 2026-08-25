@@ -155,7 +155,7 @@ export const BEEHIVE_FEATURES = [
   {
     icon: FlameIcon,
     step: "03",
-    title: "Earn Nectar & Rank Up",
+    title: "Earn Nectars",
     desc: "Get hyped with  live emoji cheers.",
   },
 ];

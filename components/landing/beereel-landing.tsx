@@ -2,6 +2,9 @@
 
 import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-ticker-05";
 import SwarmCursor from "@/components/SwarmCursor";
+import HoneycombRoom, {
+  type HiveRoom,
+} from "@/components/landing/honeycomb-room";
 import { Badge } from "@/components/ui/badge";
 import { BeeIcon } from "@/components/ui/bee-icon";
 import { Button } from "@/components/ui/button";
@@ -15,7 +18,7 @@ import {
   SITE_CONFIG,
   STATS,
 } from "@/constants";
-import { useHivePresence } from "@/lib/use-hive-presence";
+import { useHivePresence, type ActiveHive } from "@/lib/use-hive-presence";
 import {
   ChevronRightIcon,
   MicIcon,
@@ -26,9 +29,65 @@ import {
 } from "lucide-animated";
 import { Award, Hexagon, KeyRound, LogIn, Music, Plus } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import useSWR from "swr";
+
+const LIVE_PALETTE = [
+  {
+    gradient: "from-amber-400 via-amber-500 to-yellow-500",
+    glow: "shadow-amber-500/20",
+    border: "border-amber-500/30",
+  },
+  {
+    gradient: "from-yellow-400 via-amber-500 to-amber-600",
+    glow: "shadow-yellow-500/20",
+    border: "border-yellow-500/30",
+  },
+  {
+    gradient: "from-amber-500 via-orange-500 to-yellow-400",
+    glow: "shadow-orange-500/20",
+    border: "border-orange-500/30",
+  },
+  {
+    gradient: "from-orange-400 via-amber-400 to-yellow-300",
+    glow: "shadow-orange-400/20",
+    border: "border-orange-400/30",
+  },
+];
+
+function initials(name?: string) {
+  if (!name) return undefined;
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function liveToHiveRoom(hive: ActiveHive, i: number): HiveRoom {
+  const palette = LIVE_PALETTE[i % LIVE_PALETTE.length];
+  return {
+    id: hive.roomId,
+    roomId: hive.roomId,
+    name: `Hive ${hive.roomId}`,
+    genre: hive.host ? `Hosted by ${hive.host}` : "Live karaoke hive",
+    singers: hive.members,
+    nowSinging: "",
+    host: hive.host ?? "",
+    avatar: initials(hive.host) ?? hive.roomId.slice(0, 2).toUpperCase(),
+    badge:
+      hive.members >= 15
+        ? "FULL HOUSE"
+        : hive.members >= 8
+          ? "HOT STAGE"
+          : "LIVE PARTY",
+    activeWave: true,
+    ...palette,
+  };
+}
 
 export default function BeereelLanding() {
   const router = useRouter();
@@ -44,7 +103,7 @@ export default function BeereelLanding() {
   const joinInputRef = useRef<HTMLInputElement>(null);
   const createInputRef = useRef<HTMLInputElement>(null);
 
-  const { activeBees, liveHives } = useHivePresence(null);
+  const { activeBees, liveHives, activeRooms } = useHivePresence(null);
   const { data: dbStats } = useSWR<{ songsInCell: number; honeyGifts: number }>(
     "/api/stats",
     (url: string) => fetch(url).then((r) => r.json()),
@@ -93,7 +152,7 @@ export default function BeereelLanding() {
       speed={3}
       className="min-h-dvh bg-slate-950"
     >
-      <div className="min-h-screen text-slate-100 selection:bg-amber-500 selection:text-slate-950 relative font-sans">
+      <div className="min-h-screen text-slate-100 selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden font-sans">
         {/* Background Honeycomb Hex Pattern SVG */}
         <div className="absolute inset-0 opacity-15 pointer-events-none z-0">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -128,9 +187,14 @@ export default function BeereelLanding() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <Hexagon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-950 fill-amber-300 stroke-amber-950 stroke-2" />
-                </div>
+                <Image
+                  src={`/logo/favicon-96x96.png`}
+                  alt="Beereel Logo"
+                  width={40}
+                  height={40}
+                  quality={100}
+                  className="rounded-md"
+                />
                 <div className="truncate">
                   <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
                     Beereel
@@ -157,7 +221,12 @@ export default function BeereelLanding() {
                   className="h-9 px-3 sm:h-10 sm:px-4 text-xs sm:text-sm gap-1.5 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:from-amber-300 hover:to-amber-500 shadow-lg shadow-amber-500/25 border border-amber-300/50 cursor-pointer"
                 >
                   <PlayIcon size={16} animateOnHover />
-                  <span className="whitespace-nowrap">Enter Honeycomb</span>
+                  <span className="hidden min-[400px]:inline whitespace-nowrap">
+                    Enter Honeycomb
+                  </span>
+                  <span className="inline min-[400px]:hidden whitespace-nowrap">
+                    Enter
+                  </span>
                 </Button>
               </div>
             </div>
@@ -288,87 +357,18 @@ export default function BeereelLanding() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {HIVE_ROOMS.map((room) => (
-              <motion.div
-                key={room.id}
-                whileHover={{ y: -8 }}
-                transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              >
-                <Card
-                  className={`h-full bg-gradient-to-b from-slate-900/90 via-slate-950 to-slate-900/90 backdrop-blur-xl ${room.border} hover:border-amber-400/90 transition-all duration-300 shadow-xl ${room.glow} hover:shadow-2xl hover:shadow-amber-500/25 overflow-hidden group cursor-pointer flex flex-col justify-between relative`}
-                  onClick={() => setSelectedRoom(room.name)}
-                >
-                  {/* Top Colored Honey Line Accent */}
-                  <div
-                    className={`h-1.5 w-full bg-gradient-to-r ${room.gradient}`}
-                  />
-
-                  <CardContent className="p-6 flex flex-col flex-1 justify-between">
-                    <div>
-                      {/* Header Badge & Singer Count */}
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-inner">
-                          {room.badge}
-                        </span>
-                        <span className="text-xs text-slate-300 flex items-center gap-1.5 font-bold px-2 py-0.5 rounded-md bg-slate-900/80 border border-amber-500/20">
-                          <BeeIcon size={14} />
-                          {room.singers} Bees
-                        </span>
-                      </div>
-
-                      {/* Room Title & Genre */}
-                      <h3 className="text-xl font-extrabold text-slate-100 group-hover:text-amber-300 transition-colors mb-1">
-                        {room.name}
-                      </h3>
-                      <p className="text-xs font-medium text-slate-400 mb-5">
-                        {room.genre}
-                      </p>
-
-                      {/* Now Singing Player Box */}
-                      <div className="bg-slate-950/80 rounded-xl p-3.5 border border-amber-500/20 mb-5 relative overflow-hidden group-hover:border-amber-400/40 transition-colors">
-                        <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-amber-400 font-bold mb-1.5">
-                          <span className="flex items-center gap-1.5">
-                            <Music className="w-3 h-3 text-amber-400 animate-pulse" />
-                            Now Singing
-                          </span>
-                          {/* Audio Wave Equalizer Bars */}
-                          <div className="flex items-end gap-0.5 h-3">
-                            <span className="w-0.5 h-full bg-amber-400 animate-pulse" />
-                            <span className="w-0.5 h-2/3 bg-amber-400 animate-bounce" />
-                            <span className="w-0.5 h-full bg-amber-400 animate-pulse" />
-                          </div>
-                        </div>
-                        <div className="text-sm font-bold text-slate-100 truncate">
-                          {room.nowSinging}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Card Footer: Host & Join Action */}
-                    <div className="flex items-center justify-between pt-3 border-t border-amber-500/15 mt-auto">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-[11px] font-black text-amber-300">
-                          {room.avatar}
-                        </div>
-                        <span className="text-xs text-slate-400">
-                          Host:{" "}
-                          <strong className="text-slate-200">
-                            {room.host}
-                          </strong>
-                        </span>
-                      </div>
-                      <Button
-                        size="sm"
-                        className="h-8 text-xs text-slate-950 font-black px-3 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 transition-all flex items-center gap-1 shadow-md shadow-amber-500/20 cursor-pointer"
-                      >
-                        Join <ChevronRightIcon size={14} animateOnHover />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+          <div className="flex flex-wrap justify-center gap-x-3 sm:gap-x-5 gap-y-2 max-w-5xl mx-auto">
+            {activeRooms.length > 0
+              ? activeRooms.slice(0, 8).map((hive, i) => (
+                  <div key={hive.roomId}>
+                    <HoneycombRoom room={liveToHiveRoom(hive, i)} index={i} />
+                  </div>
+                ))
+              : HIVE_ROOMS.map((room, i) => (
+                  <div key={room.id}>
+                    <HoneycombRoom room={room} index={i} />
+                  </div>
+                ))}
           </div>
         </section>
 
@@ -548,26 +548,6 @@ export default function BeereelLanding() {
                       }
                       className="w-full bg-slate-950/80 border-amber-500/20 focus-visible:ring-amber-400 text-slate-100 placeholder:text-slate-500 rounded-xl font-mono tracking-wider uppercase"
                     />
-                  </div>
-
-                  <div>
-                    <Label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">
-                      Quick Join Trending Code
-                    </Label>
-                    <div className="flex flex-wrap gap-2">
-                      {["#BEE-882", "#HIVE-91", "#NEON-44"].map((code) => (
-                        <Button
-                          key={code}
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setJoinHiveCode(code)}
-                          className="text-xs font-mono font-bold border bg-slate-950/60 border-amber-500/20 text-amber-400 hover:border-amber-400 hover:bg-amber-500/10 transition-all"
-                        >
-                          {code}
-                        </Button>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </div>

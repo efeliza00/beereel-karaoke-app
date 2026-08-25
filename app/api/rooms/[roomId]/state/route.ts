@@ -8,6 +8,38 @@ type Snapshot = {
   currentSong?: unknown;
 };
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ roomId: string }> },
+) {
+  try {
+    const { roomId } = await params;
+    if (!roomId || roomId.length > 64) {
+      return NextResponse.json({ error: "Invalid room id" }, { status: 400 });
+    }
+
+    const state = await prisma.roomState.findUnique({
+      where: { id: roomId.toUpperCase() },
+    });
+
+    if (!state) {
+      return NextResponse.json({ queue: [], history: [], currentSong: null });
+    }
+
+    return NextResponse.json({
+      queue: state.queue,
+      history: state.history,
+      currentSong: state.currentSong,
+    });
+  } catch (error) {
+    console.error("Failed to load room state", error);
+    return NextResponse.json(
+      { error: "Load failed" },
+      { status: 500 },
+    );
+  }
+}
+
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ roomId: string }> },

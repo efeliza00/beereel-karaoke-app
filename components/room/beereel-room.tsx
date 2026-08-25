@@ -37,6 +37,15 @@ import {
 
 type BeeIdentity = { name: string; isHost: boolean };
 
+type NectarPayload = { nectars: number; title: string; singer: string };
+
+/** 80% chance of 90-100, 20% chance of 70-89 */
+function rollNectars(): number {
+  return Math.random() < 0.8
+    ? 90 + Math.floor(Math.random() * 11)
+    : 70 + Math.floor(Math.random() * 20);
+}
+
 type HiveSettings = {
   everyoneCanSing: boolean;
   everyoneCanControl: boolean;
@@ -208,6 +217,9 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
               </div>
             )}
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+                Now Playing
+              </p>
               <MarqueeText className="text-lg font-bold text-slate-100">
                 {item.title}
               </MarqueeText>
@@ -227,6 +239,14 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
     [],
   );
   nowPlayingToastRef.current = nowPlayingToast;
+
+  const [nectarScore, setNectarScore] = useState<NectarPayload | null>(null);
+  const nectarTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showNectarScore = useCallback((p: NectarPayload) => {
+    setNectarScore(p);
+    if (nectarTimerRef.current) clearTimeout(nectarTimerRef.current);
+    nectarTimerRef.current = setTimeout(() => setNectarScore(null), 5000);
+  }, []);
 
   const handleAlmostEnded = useCallback(() => {
     if (!currentSongRef.current) return;
@@ -421,6 +441,10 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         if (!active || beeIdentity.isHost) return;
         nowPlayingToastRef.current(payload as QueueItem);
       })
+      .on("broadcast", { event: "nectars-earned" }, ({ payload }) => {
+        if (!active || beeIdentity.isHost) return;
+        showNectarScore(payload as NectarPayload);
+      })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED" && active) {
           await channel.track({
@@ -432,7 +456,14 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
               : {}),
           });
           setIdentity(beeIdentity);
-          if (!beeIdentity.isHost) {
+          if (beeIdentity.isHost) {
+            // Register the room immediately so it counts in global stats
+            void fetch(`/api/rooms/${roomId}/state`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(hostStateRef.current),
+            }).catch(() => {});
+          } else {
             void channel.send({
               type: "broadcast",
               event: "request-state",
@@ -452,7 +483,12 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
 
   const host = members.find((m) => m.isHost);
 
-  useHivePresence(roomId);
+  useHivePresence(
+    roomId,
+    identity
+      ? { name: identity.name, isHost: identity.isHost }
+      : undefined,
+  );
 
   const isBlocked = Boolean(
     identity &&
@@ -769,8 +805,24 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
               setReactions((prev) => prev.filter((r) => r.id !== id))
             }
             onAlmostEnded={handleAlmostEnded}
+            nectarScore={nectarScore}
+            viewerName={identity?.name}
             onEnded={() => {
               if (!identity?.isHost) return;
+              const endedSong = currentSongRef.current;
+              if (endedSong) {
+                const payload: NectarPayload = {
+                  nectars: rollNectars(),
+                  title: endedSong.title,
+                  singer: endedSong.singer,
+                };
+                showNectarScore(payload);
+                void channelRef.current?.send({
+                  type: "broadcast",
+                  event: "nectars-earned",
+                  payload,
+                });
+              }
               const next = queue[0];
               if (!next) {
                 setCurrentSong(null);
