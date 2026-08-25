@@ -9,7 +9,7 @@ import {
   UserRoundPlusIcon,
   UsersIcon,
 } from "lucide-animated";
-import { Music } from "lucide-react";
+import { Hexagon, Music } from "lucide-react";
 
 export const SITE_CONFIG = {
   name: "Beereel",
@@ -17,7 +17,7 @@ export const SITE_CONFIG = {
 };
 
 export const NAV_LINKS = [
-  { label: "Live Hives", href: "#features" },
+  { label: "Live Honeycombs", href: "#features" },
   { label: "Create or Join", href: "#create-or-join" },
   { label: "How It Works", href: "#how-it-works" },
 ];
@@ -75,9 +75,10 @@ export const HOW_IT_WORKS = [
 
 export const STATS = [
   { value: "12,400+", label: "Active Bees", icon: UsersIcon },
+  { value: "3,200+", label: "Live Honeycombs", icon: RadioIcon },
   { value: "85,000+", label: "Songs in Cell", icon: Music },
-  { value: "3,200+", label: "Live Hives", icon: RadioIcon },
   { value: "1.2M", label: "Honey Gifts", icon: SparklesIcon },
+  { value: "0", label: "Honeycombs Created", icon: Hexagon },
 ];
 
 export const HIVE_ROOMS = [
