@@ -283,8 +283,9 @@ export default function BeereelLanding() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            Connect with thousands of singers in interactive honeycomb rooms.
-            Drop lyrics, stream live vocals, and collect virtual honey cheers!
+            Turn any moment into a live karaoke party. Create a private hive,
+            share the code, and your friends join instantly — no installs, no
+            accounts, just pure harmony.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 25 }}
