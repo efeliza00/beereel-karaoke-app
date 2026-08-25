@@ -125,6 +125,9 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
   const [onlineCount, setOnlineCount] = useState(0);
   const [members, setMembers] = useState<Member[]>([]);
   const [identity, setIdentity] = useState<BeeIdentity | null>(null);
+  // Members already inside the hive when it gets locked/full stay in —
+  // only future joiners are turned away.
+  const [admitted, setAdmitted] = useState(false);
   const [settings, setSettings] = useState<HiveSettings>(DEFAULT_SETTINGS);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [history, setHistory] = useState<QueueItem[]>([]);
@@ -136,7 +139,6 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
   useEffect(() => {
     currentSongRef.current = currentSong;
   }, [currentSong]);
-  const nowPlayingToastRef = useRef<(item: QueueItem) => void>(() => {});
   const mediaCommandRef = useRef<(cmd: { type: string; time?: number }) => void>(
     () => {},
   );
@@ -151,7 +153,6 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
     settingsRef.current = settings;
   }, [settings]);
 
-  const hostHydratedRef = useRef(false);
   const hostStateRef = useRef<RoomSnapshot>({
     queue: [],
     history: [],
@@ -162,22 +163,23 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
     hostStateRef.current = { queue, history, currentSong };
   }, [queue, history, currentSong]);
 
-  // Host: restore its authoritative list after a refresh
-  useEffect(() => {
-    if (!identity?.isHost) return;
+  // Host: restore its authoritative list after a refresh.
+  // `hydratedRoom === roomId` doubles as the "hydration done" flag.
+  const [hydratedRoom, setHydratedRoom] = useState<string | null>(null);
+  const hostHydrated = hydratedRoom === roomId;
+  if (identity?.isHost && roomId && !hostHydrated) {
+    setHydratedRoom(roomId);
     const snap = loadRoomSnapshot(roomId);
     if (snap) {
       setQueue(snap.queue ?? []);
       setHistory(snap.history ?? []);
       setCurrentSong(snap.currentSong ?? null);
     }
-    hostHydratedRef.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [identity?.isHost, roomId]);
+  }
 
   // Host: persist + broadcast the full list whenever it changes
   useEffect(() => {
-    if (!identity?.isHost || !hostHydratedRef.current) return;
+    if (!identity?.isHost || !hostHydrated) return;
     const snap: RoomSnapshot = { queue, history, currentSong };
     try {
       localStorage.setItem(
@@ -198,7 +200,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
       }).catch(() => {});
     }, 250);
     return () => clearTimeout(t);
-  }, [identity, queue, history, currentSong, roomId]);
+  }, [identity, hostHydrated, queue, history, currentSong, roomId]);
 
   const nowPlayingToast = useCallback(
     (item: QueueItem) => {
@@ -238,7 +240,6 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
     },
     [],
   );
-  nowPlayingToastRef.current = nowPlayingToast;
 
   const [nectarScore, setNectarScore] = useState<NectarPayload | null>(null);
   const nectarTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -247,6 +248,48 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
     if (nectarTimerRef.current) clearTimeout(nectarTimerRef.current);
     nectarTimerRef.current = setTimeout(() => setNectarScore(null), 5000);
   }, []);
+
+  /** Shown during the score overlay: what's queued next */
+  const upNextToast = useCallback((item: QueueItem) => {
+    toast.custom(
+      () => (
+        <div className="bg-slate-950/95 backdrop-blur-md text-slate-100 border-amber-500/30 rounded-[1.75rem] flex w-[24rem] max-w-[90vw] items-center gap-3 border p-5 shadow-xl shadow-amber-500/10 transition-all duration-300">
+          {item.thumbnail ? (
+            <img
+              src={item.thumbnail}
+              alt=""
+              className="size-12 shrink-0 rounded-full object-cover bg-slate-800"
+            />
+          ) : (
+            <div className="rounded-full flex size-12 shrink-0 items-center justify-center bg-amber-400 text-slate-950">
+              <Music4 className="size-6" aria-hidden="true" />
+            </div>
+          )}
+          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+              Up Next
+            </p>
+            <MarqueeText className="text-lg font-bold text-slate-100">
+              {item.title}
+            </MarqueeText>
+            <p className="text-slate-400/80 text-sm font-medium truncate">
+              {item.singer} is on the mic
+            </p>
+          </div>
+        </div>
+      ),
+      { duration: 4800 },
+    );
+  }, []);
+
+  // Advance-to-next timer (waits for the score overlay to finish)
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    },
+    [],
+  );
 
   const handleAlmostEnded = useCallback(() => {
     if (!currentSongRef.current) return;
@@ -296,6 +339,8 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
     const supabase = createClient();
     let active = true;
     let initialized = false;
+    // One-shot admission check: decided from the first presence sync (join time)
+    let admissionDecided = false;
 
     supabase
       .getChannels()
@@ -374,6 +419,17 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                   ...hostMeta,
                 };
           });
+          if (!admissionDecided) {
+            admissionDecided = true;
+            const merged = { ...DEFAULT_SETTINGS, ...hostMeta };
+            if (
+              !beeIdentity.isHost &&
+              !merged.roomLocked &&
+              currentCount <= merged.guestLimit
+            ) {
+              setAdmitted(true);
+            }
+          }
         }
       })
       .on("broadcast", { event: "hive-settings" }, ({ payload }) => {
@@ -439,11 +495,15 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
       })
       .on("broadcast", { event: "now-playing-toast" }, ({ payload }) => {
         if (!active || beeIdentity.isHost) return;
-        nowPlayingToastRef.current(payload as QueueItem);
+        nowPlayingToast(payload as QueueItem);
       })
       .on("broadcast", { event: "nectars-earned" }, ({ payload }) => {
         if (!active || beeIdentity.isHost) return;
         showNectarScore(payload as NectarPayload);
+      })
+      .on("broadcast", { event: "up-next" }, ({ payload }) => {
+        if (!active || beeIdentity.isHost) return;
+        upNextToast(payload as QueueItem);
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED" && active) {
@@ -493,6 +553,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
   const isBlocked = Boolean(
     identity &&
       !identity.isHost &&
+      !admitted &&
       (settings.roomLocked || onlineCount > settings.guestLimit),
   );
 
@@ -810,6 +871,9 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             onEnded={() => {
               if (!identity?.isHost) return;
               const endedSong = currentSongRef.current;
+              const next = queue[0];
+
+              // Score overlay + broadcast
               if (endedSong) {
                 const payload: NectarPayload = {
                   nectars: rollNectars(),
@@ -823,15 +887,33 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                   payload,
                 });
               }
-              const next = queue[0];
-              if (!next) {
-                setCurrentSong(null);
-                return;
+
+              // Up-next sonner during the overlay window
+              if (next) {
+                upNextToast(next);
+                void channelRef.current?.send({
+                  type: "broadcast",
+                  event: "up-next",
+                  payload: next,
+                });
               }
-              const stamped = { ...next, playedAt: new Date().toISOString() };
-              setQueue((prev) => prev.slice(1));
-              setHistory((prev) => [stamped, ...prev].slice(0, 50));
-              setCurrentSong(stamped);
+
+              // Hold the stage until the score overlay is gone, then advance
+              if (advanceTimerRef.current)
+                clearTimeout(advanceTimerRef.current);
+              advanceTimerRef.current = setTimeout(() => {
+                if (!next) {
+                  setCurrentSong(null);
+                  return;
+                }
+                const stamped = {
+                  ...next,
+                  playedAt: new Date().toISOString(),
+                };
+                setQueue((prev) => prev.slice(1));
+                setHistory((prev) => [stamped, ...prev].slice(0, 50));
+                setCurrentSong(stamped);
+              }, 5000);
             }}
           />
         </section>
