@@ -23,6 +23,7 @@ import { Crown, Hexagon, Lock, LogOut, Music4, HeartHandshake } from "lucide-rea
 import { useEffect, useState, useRef, useCallback } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { useHivePresence } from "@/lib/use-hive-presence";
 
 import HiveSettingsDialog from "@/components/room/hive-settings-dialog";
 import MarqueeText from "@/components/room/marquee-text";
@@ -181,6 +182,11 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         event: "update-list",
         payload: snap,
       });
+      void fetch(`/api/rooms/${roomId}/state`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(snap),
+      }).catch(() => {});
     }, 250);
     return () => clearTimeout(t);
   }, [identity, queue, history, currentSong, roomId]);
@@ -445,6 +451,8 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
   }, [roomId]);
 
   const host = members.find((m) => m.isHost);
+
+  useHivePresence(roomId);
 
   const isBlocked = Boolean(
     identity &&

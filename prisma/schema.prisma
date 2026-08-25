@@ -11,3 +11,18 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model RoomState {
+  id          String   @id
+  queue       Json     @default("[]")
+  history     Json     @default("[]")
+  currentSong Json?
+  updatedAt   DateTime @updatedAt
+}
+
+model Gift {
+  id        String   @id @default(cuid())
+  amount    Int      @default(1)
+  message   String?
+  createdAt DateTime @default(now())
+}

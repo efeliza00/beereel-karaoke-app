@@ -96,12 +96,28 @@ export default function HiveTipsDialog({
             </span>
           </label>
 
-          <Button
-            onClick={handleClose}
-            className="w-full cursor-pointer bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold"
-          >
-            Thanks for the buzz!
-          </Button>
+          <div className="flex flex-col w-full gap-2">
+            <Button
+              onClick={() => {
+                void fetch("/api/gifts", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ amount: 1 }),
+                }).catch(() => {});
+                handleClose();
+              }}
+              className="w-full cursor-pointer bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold"
+            >
+              🍯 I sent a tip!
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleClose}
+              className="w-full cursor-pointer text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 text-sm"
+            >
+              Maybe later
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

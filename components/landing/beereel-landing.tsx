@@ -24,7 +24,9 @@ import {
 import { Award, Hexagon, KeyRound, LogIn, Music, Plus } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import { useRef, useState } from "react";
+import { useHivePresence } from "@/lib/use-hive-presence";
 
 export default function BeereelLanding() {
   const router = useRouter();
@@ -39,6 +41,26 @@ export default function BeereelLanding() {
 
   const joinInputRef = useRef<HTMLInputElement>(null);
   const createInputRef = useRef<HTMLInputElement>(null);
+
+  const { activeBees, liveHives } = useHivePresence(null);
+  const { data: dbStats } = useSWR<{ songsInCell: number; honeyGifts: number }>(
+    "/api/stats",
+    (url: string) => fetch(url).then((r) => r.json()),
+    { refreshInterval: 15000 },
+  );
+
+  const fmt = (n: number) =>
+    n >= 1000 ? `${Intl.NumberFormat("en", { notation: "compact" }).format(n)}+` : String(n);
+
+  const liveStatValue = (label: string, fallback: string) => {
+    if (label === "Active Bees" && activeBees > 0) return fmt(activeBees);
+    if (label === "Live Hives" && liveHives > 0) return fmt(liveHives);
+    if (label === "Songs in Cell" && dbStats?.songsInCell)
+      return fmt(dbStats.songsInCell);
+    if (label === "Honey Gifts" && dbStats?.honeyGifts)
+      return fmt(dbStats.honeyGifts);
+    return fallback;
+  };
 
   const handleNavigate = (targetId: string, option?: "create" | "join") => {
     if (option) {
@@ -207,7 +229,7 @@ export default function BeereelLanding() {
               <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/25 transition-colors" />
               <div className="flex items-center justify-between mb-2">
                 <span className="text-2xl md:text-3xl font-black bg-gradient-to-r from-yellow-300 to-amber-400 bg-clip-text text-transparent">
-                  {st.value}
+                  {liveStatValue(st.label, st.value)}
                 </span>
                 {st.icon && (
                   <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform shrink-0">
