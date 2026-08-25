@@ -5,7 +5,6 @@ import HoneycombRoom, {
 } from "@/components/landing/honeycomb-room";
 import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-ticker-05";
 import SwarmCursor from "@/components/SwarmCursor";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,12 +31,13 @@ import {
   SparklesIcon,
   ZapIcon,
 } from "lucide-animated";
-import { Award, Hexagon, KeyRound, LogIn, Plus } from "lucide-react";
+import { Award, Hexagon, KeyRound, LogIn, Music, Plus } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import useSWR from "swr";
+import { Badge } from "../ui/badge";
 
 const LIVE_PALETTE = [
   {
@@ -109,21 +109,32 @@ export default function BeereelLanding() {
   const createInputRef = useRef<HTMLInputElement>(null);
 
   const { activeBees, liveHives, activeRooms } = useHivePresence(null);
-  const { data: dbStats } = useSWR<{ songsInCell: number; honeyGifts: number }>(
-    "/api/stats",
-    (url: string) => fetch(url).then((r) => r.json()),
-    { refreshInterval: 15000 },
-  );
+  const { data: dbStats } = useSWR<{
+    songsInCell: number;
+    honeyGifts: number;
+    honeyDrops: number;
+    totalHives: number;
+    trendingSongs: {
+      title: string;
+      count: number;
+      videoId: string;
+      thumbnail?: string;
+    }[];
+  }>("/api/stats", (url: string) => fetch(url).then((r) => r.json()), {
+    refreshInterval: 15000,
+  });
 
   // Real values only — no fake marketing placeholders. `null` renders as "—"
   // until the first live sync arrives.
   const statNumbers: Record<string, number | null> = {
     "Active Bees": activeBees > 0 ? activeBees : null,
-    "Live Hives": liveHives > 0 ? liveHives : null,
+    "Live Honeycombs": liveHives > 0 ? liveHives : null,
     "Songs in Cell":
       typeof dbStats?.songsInCell === "number" ? dbStats.songsInCell : null,
     "Honey Gifts":
       typeof dbStats?.honeyGifts === "number" ? dbStats.honeyGifts : null,
+    "Honeycombs Created":
+      typeof dbStats?.totalHives === "number" ? dbStats.totalHives : null,
   };
 
   const handleNavigate = (targetId: string, option?: "create" | "join") => {
@@ -262,7 +273,7 @@ export default function BeereelLanding() {
           >
             Join the Karaoke <br />
             <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(245,158,11,0.35)]">
-              Beehive
+              Hive
             </span>
           </motion.h1>
 
@@ -275,6 +286,20 @@ export default function BeereelLanding() {
             Connect with thousands of singers in interactive honeycomb rooms.
             Drop lyrics, stream live vocals, and collect virtual honey cheers!
           </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+          >
+            <iframe
+              src="https://appbuildersph.com/embed/apps/beereel"
+              title="Beereel votes on App Builders PH"
+              width="320"
+              height="96"
+              loading="lazy"
+            ></iframe>
+          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 25 }}
@@ -334,6 +359,101 @@ export default function BeereelLanding() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </section>
+
+        {/* Leaderboard Section */}
+        <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <Badge
+              variant="outline"
+              className="border-amber-500/40 bg-amber-500/10 text-amber-300 mb-3 px-3 py-1 gap-1.5"
+            >
+              <Award size={14} />
+              Leaderboard
+            </Badge>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-100 mb-4">
+              Most Sang{" "}
+              <span className="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
+                Songs
+              </span>
+            </h2>
+            <p className="text-slate-400 max-w-xl mx-auto text-sm md:text-base">
+              Top 5 tracks performed across all honeycombs.
+            </p>
+          </motion.div>
+
+          <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-amber-500/20 shadow-2xl shadow-amber-500/10 overflow-hidden">
+            {dbStats?.trendingSongs && dbStats.trendingSongs.length > 0 ? (
+              <div className="divide-y divide-amber-500/10">
+                {dbStats.trendingSongs.map((song, i) => (
+                  <motion.div
+                    key={song.videoId}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.03 }}
+                    className="flex items-center gap-4 px-6 py-4 hover:bg-amber-500/5 transition-colors group"
+                  >
+                    <div className="w-8 shrink-0 text-center">
+                      {i < 3 ? (
+                        <span
+                          className={`inline-flex items-center justify-center size-8 rounded-full text-xs font-black ${
+                            i === 0
+                              ? "bg-amber-400/20 text-amber-300 ring-1 ring-amber-400/40"
+                              : i === 1
+                                ? "bg-slate-400/15 text-slate-300 ring-1 ring-slate-400/30"
+                                : "bg-amber-700/20 text-amber-500 ring-1 ring-amber-700/30"
+                          }`}
+                        >
+                          {i + 1}
+                        </span>
+                      ) : (
+                        <span className="text-slate-500 font-bold text-sm">
+                          {i + 1}
+                        </span>
+                      )}
+                    </div>
+
+                    {song.thumbnail ? (
+                      <img
+                        src={song.thumbnail}
+                        alt=""
+                        className="size-10 rounded-lg object-cover bg-slate-800 shrink-0"
+                      />
+                    ) : (
+                      <div className="size-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                        <PlayIcon size={16} className="text-amber-400" />
+                      </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-slate-200 truncate group-hover:text-amber-300 transition-colors">
+                        {song.title}
+                      </p>
+                    </div>
+
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 font-bold text-xs shrink-0">
+                      <PlayIcon size={12} />
+                      {song.count}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+                <Music size={32} className="mb-3 opacity-40" />
+                <p className="italic text-sm">
+                  No songs performed yet. Start a hive and be the first!
+                </p>
+              </div>
+            )}
           </div>
         </section>
 

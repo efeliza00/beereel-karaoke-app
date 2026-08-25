@@ -83,6 +83,18 @@ export default function StagePlayer({
     null,
   );
   const [guestIsPlaying, setGuestIsPlaying] = useState(false);
+  const [resetKey, setResetKey] = useState<string | null>(null);
+
+  // Reset guest playback state when video changes (render-phase adjustment)
+  if (video?.videoId && resetKey !== video.videoId) {
+    setResetKey(video.videoId);
+    setGuestIsPlaying(false);
+  }
+
+  // Clear pending remote intent when video changes
+  useEffect(() => {
+    pendingRemoteRef.current = null;
+  }, [video?.videoId]);
 
   useEffect(() => {
     onEndedRef.current = onEnded;
@@ -105,11 +117,6 @@ export default function StagePlayer({
       void el.requestFullscreen?.();
     }
   };
-
-  useEffect(() => {
-    setGuestIsPlaying(false);
-    pendingRemoteRef.current = null;
-  }, [video?.videoId]);
 
   const consumeRemoteIntent = (type: string) => {
     const pending = pendingRemoteRef.current;
