@@ -77,12 +77,12 @@ function liveToHiveRoom(hive: ActiveHive, i: number): HiveRoom {
   return {
     id: hive.roomId,
     roomId: hive.roomId,
-    name: `Hive ${hive.roomId}`,
+    name: hive.host ? `${hive.host}'s Hive` : "Live Hive",
     genre: hive.host ? `Hosted by ${hive.host}` : "Live karaoke hive",
     singers: hive.members,
     nowSinging: "",
     host: hive.host ?? "",
-    avatar: initials(hive.host) ?? hive.roomId.slice(0, 2).toUpperCase(),
+    avatar: initials(hive.host) ?? "B",
     badge:
       hive.members >= 15
         ? "FULL HOUSE"
@@ -100,7 +100,6 @@ export default function BeereelLanding() {
   const [createUserName, setCreateUserName] = useState("");
   const [joinUserName, setJoinUserName] = useState("");
   const [joinHiveCode, setJoinHiveCode] = useState("");
-  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [highlightedCard, setHighlightedCard] = useState<
     "create" | "join" | null
   >(null);
@@ -523,17 +522,6 @@ export default function BeereelLanding() {
             </p>
           </div>
 
-          {actionMessage && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-xl mx-auto mb-8 p-4 rounded-xl bg-amber-500/20 border border-amber-400/50 text-amber-300 text-center font-bold text-sm shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2"
-            >
-              <SparklesIcon size={18} animateOnHover />
-              {actionMessage}
-            </motion.div>
-          )}
-
           <div className="flex flex-col md:flex-row items-stretch justify-center gap-6 max-w-6xl mx-auto">
             {/* Option 1: Create Hive */}
             <motion.div
@@ -590,9 +578,6 @@ export default function BeereelLanding() {
                   sessionStorage.setItem(
                     `bee:${roomId}`,
                     JSON.stringify({ name: host, isHost: true }),
-                  );
-                  setActionMessage(
-                    `🎉 Hive Room created by ${host}! Code: #${roomId}`,
                   );
                   router.push(`/room/${roomId}`);
                 }}
@@ -687,9 +672,6 @@ export default function BeereelLanding() {
                   sessionStorage.setItem(
                     `bee:${code}`,
                     JSON.stringify({ name: user, isHost: false }),
-                  );
-                  setActionMessage(
-                    `🐝 ${user} joining Hive #${code}... Connected to live room!`,
                   );
                   router.push(`/room/${code}`);
                 }}

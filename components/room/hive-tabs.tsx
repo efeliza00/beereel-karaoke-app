@@ -1,14 +1,22 @@
 "use client";
 
+import MarqueeText from "@/components/room/marquee-text";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { History, ListMusic, Music, Play, Plus, Search, Radio } from "lucide-react";
+import {
+  History,
+  ListMusic,
+  Music,
+  Play,
+  Plus,
+  Radio,
+  Search,
+} from "lucide-react";
 import type { Transition, Variants } from "motion/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
-import MarqueeText from "@/components/room/marquee-text";
 
 export type QueueItem = {
   videoId: string;
@@ -173,7 +181,8 @@ export default function HiveTabs({
                   {currentSong && (
                     <div className="mb-6">
                       <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 mb-2 flex items-center gap-1.5">
-                        <Radio size={12} className="animate-pulse" /> Now Playing
+                        <Radio size={12} className="animate-pulse" /> Now
+                        Playing
                       </p>
                       <div className="flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3">
                         {currentSong.thumbnail && (
@@ -330,7 +339,6 @@ export default function HiveTabs({
                   )}
                 </div>
               )}
-
             </PanelShell>
           </AnimatePresence>
         </div>
@@ -345,15 +353,30 @@ function SearchResults({
   queue,
   singerName,
   onQueueAdd,
+  trendingSongs = [],
 }: {
   query: string;
   enabled: boolean;
   queue: QueueItem[];
   singerName: string;
   onQueueAdd: (item: QueueItem) => void;
+  trendingSongs?: { title: string; videoId: string; thumbnail?: string; count: number }[];
 }) {
+  // Separate fetcher for stats (different response shape)
+  async function statsFetcher(url: string) {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? "Stats failed");
+    return data as { trendingSongs: QueueItem[] };
+  }
+
+  const { data: stats } = useSWR<{ trendingSongs: QueueItem[] }>(
+    "/api/stats",
+    statsFetcher
+  );
+
   const shouldFetch = enabled && query.length >= 2;
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading } = useSWR<SearchResponse>(
     shouldFetch ? `/api/youtube-search?q=${encodeURIComponent(query)}` : null,
     fetcher,
     { keepPreviousData: true },
@@ -361,9 +384,58 @@ function SearchResults({
 
   if (!shouldFetch) {
     return (
-      <p className="mt-6 text-xs text-slate-600 text-center leading-relaxed">
-        Type at least 2 characters to search YouTube.
-      </p>
+      <div className="mt-6">
+        <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 mb-3 px-1">
+          Trending on Beereel
+        </h4>
+        <ul className="space-y-2">
+          {stats?.trendingSongs?.slice(0, 5).map((r) => {
+            const alreadyQueued = queue.some((q) => q.videoId === r.videoId);
+            return (
+              <li
+                key={r.videoId}
+                className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-950/60 px-2.5 py-2"
+              >
+                {r.thumbnail ? (
+                  <img
+                    src={r.thumbnail}
+                    alt=""
+                    className="w-24 h-16 rounded-md object-cover shrink-0 bg-slate-800"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="w-24 h-16 rounded-md bg-slate-800 shrink-0 flex items-center justify-center">
+                    <Music className="size-5 text-slate-500" />
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-slate-200 line-clamp-1">
+                    {r.title}
+                  </p>
+                  <p className="text-[11px] text-slate-500 truncate">
+                    {r.channel}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onQueueAdd({ ...r, singer: singerName })}
+                  disabled={alreadyQueued || !enabled}
+                  className={cn(
+                    "gap-1 shrink-0 h-7 px-2 text-[11px] font-black cursor-pointer",
+                    alreadyQueued
+                      ? "opacity-40"
+                      : "text-amber-300 border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-200",
+                  )}
+                  aria-label={`Add ${r.title} to queue`}
+                >
+                  {alreadyQueued ? "Queued" : <><Plus size={12} /> Queue</>}
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     );
   }
   if (error)

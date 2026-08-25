@@ -142,6 +142,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
   const mediaCommandRef = useRef<(cmd: { type: string; time?: number }) => void>(
     () => {},
   );
+  const hostIsPlayingRef = useRef(false);
   const mediaVolumeRef = useRef<(vol: { muted: boolean; volume: number }) => void>(
     () => {},
   );
@@ -383,15 +384,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         const currentCount = currentMembers.length;
 
         if (initialized) {
-          if (currentCount > prevCount.current) {
-            toast.success("A bee has joined the hive!", {
-              id: `bee-${roomId}-join`,
-            });
-          } else if (currentCount < prevCount.current) {
-            toast.warning("A bee has left the hive.", {
-              id: `bee-${roomId}-left`,
-            });
-          }
+          // member count changes tracked silently
         }
 
         initialized = true;
@@ -437,9 +430,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
 
         const incoming = payload as Partial<HiveSettings>;
         setSettings((prev) => ({ ...prev, ...incoming }));
-        toast.info("The host updated the hive settings.", {
-          id: `bee-${roomId}-settings`,
-        });
+        // Toast removed
       })
       .on("broadcast", { event: "media-control" }, ({ payload }) => {
         if (!active) return;
@@ -448,15 +439,40 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
           mediaCommandRef.current(cmd);
         }
       })
-      .on("broadcast", { event: "media-volume" }, ({ payload }) => {
+.on("broadcast", { event: "media-volume" }, ({ payload }) => {
         if (!active) return;
         const vol = payload as { muted: boolean; volume: number };
         if (mediaVolumeRef.current) {
           mediaVolumeRef.current(vol);
         }
       })
+      .on("broadcast", { event: "sync-state" }, ({ payload }) => {
+        if (!active || beeIdentity.isHost) return;
+        const sync = payload as {
+          isPlaying: boolean;
+          currentTime: number;
+          muted: boolean;
+          volume: number;
+        };
+        if (mediaCommandRef.current) {
+          if (sync.isPlaying) {
+            mediaCommandRef.current({ type: "play" });
+          } else {
+            mediaCommandRef.current({ type: "pause" });
+          }
+        }
+        if (sync.currentTime > 0 && mediaCommandRef.current) {
+          mediaCommandRef.current({ type: "seek", time: sync.currentTime });
+        }
+        if (mediaVolumeRef.current) {
+          mediaVolumeRef.current({
+            muted: sync.muted,
+            volume: sync.volume,
+          });
+        }
+      })
       .on("broadcast", { event: "queue-add" }, ({ payload }) => {
-        if (!active) return;
+        if (!active || beeIdentity.isHost) return;
 
         const item = payload as QueueItem;
         if (beeIdentity.isHost) {
@@ -466,7 +482,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
               : [...prev, item],
           );
         }
-        toast.info(`${item.singer} queued "${item.title}"`);
+        // Toast removed
       })
       .on("broadcast", { event: "update-list" }, ({ payload }) => {
         if (!active || beeIdentity.isHost) return;
@@ -476,13 +492,18 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         setHistory(snap.history ?? []);
         setCurrentSong(snap.currentSong ?? null);
       })
-      .on("broadcast", { event: "request-state" }, () => {
+      .on("broadcast", { event: "request-sync" }, () => {
         if (!active || !beeIdentity.isHost) return;
 
-        void channel.send({
+        void channelRef.current?.send({
           type: "broadcast",
-          event: "update-list",
-          payload: hostStateRef.current,
+          event: "sync-state",
+          payload: {
+            isPlaying: hostIsPlayingRef.current,
+            currentTime: 0, // will be filled by host
+            muted: false,
+            volume: 1,
+          },
         });
       })
       .on("broadcast", { event: "reaction" }, ({ payload }) => {
@@ -846,6 +867,8 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             video={currentSong}
             canControl={Boolean(identity?.isHost || settings.everyoneCanControl)}
             onMediaControl={(cmd) => {
+              if (cmd.type === "play") hostIsPlayingRef.current = true;
+              else if (cmd.type === "pause") hostIsPlayingRef.current = false;
               void channelRef.current?.send({
                 type: "broadcast",
                 event: "media-control",
@@ -859,7 +882,6 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                 payload: vol,
               });
             }}
-            onMediaCommand={(cb) => (mediaCommandRef.current = cb)}
             onVolumeCommand={(cb) => (mediaVolumeRef.current = cb)}
             reactions={reactions}
             onReactionComplete={(id) =>
