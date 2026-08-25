@@ -17,9 +17,46 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Beereel - Sing Together, Anywhere",
+  title: {
+    default: "Beereel — Sing Together, Anywhere",
+    template: "%s · Beereel",
+  },
   description:
-    "Create virtual karaoke rooms, invite friends, and sing your favorite songs together in real-time. No stage needed.",
+    "Create a hive, invite your friends, and karaoke together in real time. Live honeycomb rooms, synced playback, and instant reactions — no stage needed.",
+  applicationName: "Beereel",
+  keywords: [
+    "karaoke",
+    "sing together",
+    "virtual karaoke rooms",
+    "real-time karaoke",
+    "online karaoke party",
+    "Beereel",
+  ],
+  manifest: "/logo/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/logo/favicon.svg", type: "image/svg+xml" },
+      {
+        url: "/logo/favicon-96x96.png",
+        sizes: "96x96",
+        type: "image/png",
+      },
+    ],
+    apple: "/logo/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "Beereel — Sing Together, Anywhere",
+    description:
+      "Create a hive, invite your friends, and karaoke together in real time. Live honeycomb rooms, synced playback, and instant reactions.",
+    siteName: "Beereel",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Beereel — Sing Together, Anywhere",
+    description:
+      "Create a hive, invite your friends, and karaoke together in real time.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
