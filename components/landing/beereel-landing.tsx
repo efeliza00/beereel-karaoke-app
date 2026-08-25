@@ -1,8 +1,11 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { BeeIcon } from "@/components/ui/bee-icon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   BEEHIVE_FEATURES,
   HIVE_ROOMS,
@@ -11,24 +14,51 @@ import {
   STATS,
 } from "@/constants";
 import {
-  Award,
-  Hexagon,
-  Music,
-} from "lucide-react";
-import {
+  ChevronRightIcon,
   MicIcon,
-  UsersIcon,
-  RadioIcon,
   PlayIcon,
+  RadioIcon,
   SparklesIcon,
   ZapIcon,
-  ChevronRightIcon,
 } from "lucide-animated";
+import { Award, Hexagon, KeyRound, LogIn, Music, Plus } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 
 export default function BeereelLanding() {
+  const router = useRouter();
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+  const [createUserName, setCreateUserName] = useState("");
+  const [joinUserName, setJoinUserName] = useState("");
+  const [joinHiveCode, setJoinHiveCode] = useState("");
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [highlightedCard, setHighlightedCard] = useState<
+    "create" | "join" | null
+  >(null);
+
+  const joinInputRef = useRef<HTMLInputElement>(null);
+  const createInputRef = useRef<HTMLInputElement>(null);
+
+  const handleNavigate = (targetId: string, option?: "create" | "join") => {
+    if (option) {
+      setHighlightedCard(option);
+      setTimeout(() => {
+        if (option === "join" && joinInputRef.current) {
+          joinInputRef.current.focus();
+        } else if (option === "create" && createInputRef.current) {
+          createInputRef.current.focus();
+        }
+      }, 400);
+      setTimeout(() => {
+        setHighlightedCard(null);
+      }, 3500);
+    }
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-amber-500 selection:text-slate-950 relative overflow-hidden font-sans">
@@ -89,9 +119,12 @@ export default function BeereelLanding() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Button className="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:from-amber-300 hover:to-amber-500 shadow-lg shadow-amber-500/25 border border-amber-300/50">
+              <Button
+                onClick={() => handleNavigate("create-or-join", "join")}
+                className="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:from-amber-300 hover:to-amber-500 shadow-lg shadow-amber-500/25 border border-amber-300/50 cursor-pointer"
+              >
                 <PlayIcon size={16} animateOnHover />
-                Enter Hive
+                Enter Honeycomb
               </Button>
             </div>
           </div>
@@ -122,7 +155,7 @@ export default function BeereelLanding() {
         >
           Join the Karaoke <br />
           <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(245,158,11,0.35)]">
-            Honey Beehive
+            Beehive
           </span>
         </motion.h1>
 
@@ -144,7 +177,8 @@ export default function BeereelLanding() {
         >
           <Button
             size="lg"
-            className="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 font-extrabold text-base px-8 py-6 shadow-xl shadow-amber-500/30 hover:scale-105 transition-transform border border-amber-300 gap-2"
+            onClick={() => handleNavigate("create-or-join", "create")}
+            className="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 font-extrabold text-base px-8 py-6 shadow-xl shadow-amber-500/30 hover:scale-105 transition-transform border border-amber-300 gap-2 cursor-pointer"
           >
             <MicIcon size={20} animateOnHover />
             Start Singing Now
@@ -152,10 +186,11 @@ export default function BeereelLanding() {
           <Button
             size="lg"
             variant="outline"
-            className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 text-base px-8 py-6 gap-2"
+            onClick={() => handleNavigate("features")}
+            className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 text-base px-8 py-6 gap-2 cursor-pointer"
           >
             <RadioIcon size={20} animateOnHover />
-            Browse Live Hives
+            Browse Live Honeycombs
           </Button>
         </motion.div>
 
@@ -176,7 +211,7 @@ export default function BeereelLanding() {
                 </span>
                 {st.icon && (
                   <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform shrink-0">
-                    <st.icon size={16} className="w-4 h-4" animateOnHover />
+                    <st.icon size={16} className="w-4 h-4" />
                   </div>
                 )}
               </div>
@@ -204,7 +239,7 @@ export default function BeereelLanding() {
           <h2 className="text-3xl md:text-5xl font-black text-slate-100">
             Explore Active{" "}
             <span className="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
-              Singing Hives
+              Singing Honeycombs
             </span>
           </h2>
           <p className="text-slate-400 max-w-xl mx-auto mt-3 text-sm md:text-base">
@@ -237,7 +272,7 @@ export default function BeereelLanding() {
                         {room.badge}
                       </span>
                       <span className="text-xs text-slate-300 flex items-center gap-1.5 font-bold px-2 py-0.5 rounded-md bg-slate-900/80 border border-amber-500/20">
-                        <UsersIcon size={14} animateOnHover />
+                        <BeeIcon size={14} />
                         {room.singers} Bees
                       </span>
                     </div>
@@ -281,14 +316,242 @@ export default function BeereelLanding() {
                         <strong className="text-slate-200">{room.host}</strong>
                       </span>
                     </div>
-                    <span className="text-xs text-slate-950 font-black px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 group-hover:from-amber-300 group-hover:to-amber-400 transition-all flex items-center gap-1 shadow-md shadow-amber-500/20">
+                    <Button
+                      size="sm"
+                      className="h-8 text-xs text-slate-950 font-black px-3 rounded-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 transition-all flex items-center gap-1 shadow-md shadow-amber-500/20 cursor-pointer"
+                    >
                       Join <ChevronRightIcon size={14} animateOnHover />
-                    </span>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      {/* Create or Join a Hive Options Section */}
+      <section
+        id="create-or-join"
+        className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10"
+      >
+        <div className="text-center mb-14">
+          <Badge
+            variant="outline"
+            className="border-amber-500/40 bg-amber-500/10 text-amber-300 mb-3 px-3 py-1 gap-1.5"
+          >
+            <SparklesIcon size={14} animateOnHover />
+            Instant Hive Access
+          </Badge>
+          <h2 className="text-3xl md:text-5xl font-black text-slate-100">
+            Create or Join a{" "}
+            <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent">
+              Honeycomb Stage
+            </span>
+          </h2>
+          <p className="text-slate-400 max-w-xl mx-auto mt-3 text-sm md:text-base">
+            Start your own custom honeycomb room or enter a room code to drop
+            right into the live choir.
+          </p>
+        </div>
+
+        {actionMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-xl mx-auto mb-8 p-4 rounded-xl bg-amber-500/20 border border-amber-400/50 text-amber-300 text-center font-bold text-sm shadow-lg shadow-amber-500/10 flex items-center justify-center gap-2"
+          >
+            <SparklesIcon size={18} animateOnHover />
+            {actionMessage}
+          </motion.div>
+        )}
+
+        <div className="flex flex-col md:flex-row items-stretch justify-center gap-6 max-w-6xl mx-auto">
+          {/* Option 1: Create Hive */}
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className={`flex-1 bg-slate-900/80 border rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between transition-all duration-500 ${
+              highlightedCard === "create"
+                ? "border-amber-400 ring-4 ring-amber-400/50 shadow-2xl shadow-amber-500/40 scale-[1.02]"
+                : "border-amber-500/30 hover:border-amber-400/70 shadow-xl shadow-amber-500/5"
+            }`}
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30 shrink-0 text-slate-950 font-black">
+                  <Plus className="w-6 h-6 stroke-[3]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-100">
+                    Create New Honeycomb
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Host a room and invite your squad
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6 text-left">
+                <div>
+                  <Label
+                    htmlFor="create-username"
+                    className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider"
+                  >
+                    Your Stage Name (Host)
+                  </Label>
+                  <Input
+                    id="create-username"
+                    ref={createInputRef}
+                    type="text"
+                    placeholder="e.g. QueenBee_99"
+                    value={createUserName}
+                    onChange={(e) => setCreateUserName(e.target.value)}
+                    className="w-full bg-slate-950/80 border-amber-500/20 focus-visible:ring-amber-400 text-slate-100 placeholder:text-slate-500 rounded-xl"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => {
+                const host = createUserName.trim() || "QueenBee_99";
+                const roomId = `HEX-${Math.floor(1000 + Math.random() * 9000)}`;
+
+                sessionStorage.setItem(
+                  `bee:${roomId}`,
+                  JSON.stringify({ name: host, isHost: true }),
+                );
+                setActionMessage(
+                  `🎉 Hive Room created by ${host}! Code: #${roomId}`,
+                );
+                router.push(`/room/${roomId}`);
+              }}
+              className="w-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 font-black text-sm py-6 shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-transform border border-amber-300 gap-2"
+            >
+              <MicIcon size={18} animateOnHover />
+              Create Honeycomb
+            </Button>
+          </motion.div>
+
+          {/* Separator Line with OR */}
+          <div className="flex md:flex-col items-center justify-center gap-3 my-4 md:my-0 shrink-0">
+            <div className="h-px w-full md:w-px md:h-full min-h-[40px] bg-gradient-to-r md:bg-gradient-to-b from-transparent via-amber-500/40 to-transparent" />
+            <span className="text-amber-400 text-xs font-black tracking-widest uppercase shrink-0">
+              OR
+            </span>
+            <div className="h-px w-full md:w-px md:h-full min-h-[40px] bg-gradient-to-r md:bg-gradient-to-b from-transparent via-amber-500/40 to-transparent" />
+          </div>
+
+          {/* Option 2: Join Hive */}
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            className={`flex-1 bg-slate-900/80 border rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between transition-all duration-500 ${
+              highlightedCard === "join"
+                ? "border-amber-400 ring-4 ring-amber-400/50 shadow-2xl shadow-amber-500/40 scale-[1.02]"
+                : "border-amber-500/30 hover:border-amber-400/70 shadow-xl shadow-amber-500/5"
+            }`}
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/30 shrink-0 text-slate-950 font-black">
+                  <KeyRound className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-100">
+                    Join with Room Code
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Enter a 6-character hex code
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6 text-left">
+                <div>
+                  <Label
+                    htmlFor="join-username"
+                    className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider"
+                  >
+                    Your Bee Name (Singer)
+                  </Label>
+                  <Input
+                    id="join-username"
+                    type="text"
+                    placeholder="e.g. HoneyVocalist"
+                    value={joinUserName}
+                    onChange={(e) => setJoinUserName(e.target.value)}
+                    className="w-full bg-slate-950/80 border-amber-500/20 focus-visible:ring-amber-400 text-slate-100 placeholder:text-slate-500 rounded-xl"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="join-code"
+                    className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider"
+                  >
+                    Hive Hex Code
+                  </Label>
+                  <Input
+                    id="join-code"
+                    ref={joinInputRef}
+                    type="text"
+                    placeholder="e.g. #HEX-8492"
+                    value={joinHiveCode}
+                    onChange={(e) =>
+                      setJoinHiveCode(e.target.value.toUpperCase())
+                    }
+                    className="w-full bg-slate-950/80 border-amber-500/20 focus-visible:ring-amber-400 text-slate-100 placeholder:text-slate-500 rounded-xl font-mono tracking-wider uppercase"
+                  />
+                </div>
+
+                <div>
+                  <Label className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider">
+                    Quick Join Trending Code
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {["#BEE-882", "#HIVE-91", "#NEON-44"].map((code) => (
+                      <Button
+                        key={code}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setJoinHiveCode(code)}
+                        className="text-xs font-mono font-bold border bg-slate-950/60 border-amber-500/20 text-amber-400 hover:border-amber-400 hover:bg-amber-500/10 transition-all"
+                      >
+                        {code}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => {
+                const user = joinUserName.trim() || "HoneyVocalist";
+                const code =
+                  joinHiveCode.trim().replace(/^#/, "").toUpperCase() ||
+                  "HEX-4231";
+                sessionStorage.setItem(
+                  `bee:${code}`,
+                  JSON.stringify({ name: user, isHost: false }),
+                );
+                setActionMessage(
+                  `🐝 ${user} joining Hive #${code}... Connected to live room!`,
+                );
+                router.push(`/room/${code}`);
+              }}
+              variant="outline"
+              className="w-full border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 font-bold text-sm py-6 gap-2"
+            >
+              <LogIn className="w-5 h-5" />
+              Enter Code
+            </Button>
+          </motion.div>
         </div>
       </section>
 
@@ -325,7 +588,10 @@ export default function BeereelLanding() {
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform shrink-0">
-                      <feat.icon size={28} className="w-7 h-7 text-slate-950 stroke-[2.5]" animateOnHover />
+                      <feat.icon
+                        size={28}
+                        className="w-7 h-7 text-slate-950 stroke-[2.5]"
+                      />
                     </div>
                     <span className="text-2xl font-black text-amber-400/30 group-hover:text-amber-400/60 transition-colors">
                       {feat.step}
@@ -363,13 +629,15 @@ export default function BeereelLanding() {
             Create your custom hexagon karaoke room in seconds. Invite friends
             and share the sweet sound.
           </p>
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black text-base px-8 py-6 shadow-xl shadow-amber-500/30 hover:scale-105 transition-transform border border-amber-300/50 gap-2"
-          >
-            <ZapIcon size={20} animateOnHover />
-            Launch My Hive Room
-          </Button>
+          <a href="#create-or-join">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black text-base px-8 py-6 shadow-xl shadow-amber-500/30 hover:scale-105 transition-transform border border-amber-300/50 gap-2"
+            >
+              <ZapIcon size={20} animateOnHover />
+              Launch My Hive Room
+            </Button>
+          </a>
         </div>
       </section>
 

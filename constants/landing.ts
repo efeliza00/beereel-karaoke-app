@@ -17,9 +17,9 @@ export const SITE_CONFIG = {
 };
 
 export const NAV_LINKS = [
-  { label: "Features", href: "#features" },
+  { label: "Live Hives", href: "#features" },
+  { label: "Create or Join", href: "#create-or-join" },
   { label: "How It Works", href: "#how-it-works" },
-  { label: "Community", href: "#community" },
 ];
 
 export const FOOTER_LINKS = [
