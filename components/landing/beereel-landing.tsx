@@ -1,14 +1,12 @@
 "use client";
 
-import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-ticker-05";
-import SwarmCursor from "@/components/SwarmCursor";
 import HoneycombRoom, {
   type HiveRoom,
 } from "@/components/landing/honeycomb-room";
+import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-ticker-05";
+import SwarmCursor from "@/components/SwarmCursor";
 import { Badge } from "@/components/ui/badge";
-import { BeeIcon } from "@/components/ui/bee-icon";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -20,14 +18,13 @@ import {
 } from "@/constants";
 import { useHivePresence, type ActiveHive } from "@/lib/use-hive-presence";
 import {
-  ChevronRightIcon,
   MicIcon,
   PlayIcon,
   RadioIcon,
   SparklesIcon,
   ZapIcon,
 } from "lucide-animated";
-import { Award, Hexagon, KeyRound, LogIn, Music, Plus } from "lucide-react";
+import { Award, Hexagon, KeyRound, LogIn, Plus } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -193,7 +190,7 @@ export default function BeereelLanding() {
                   width={40}
                   height={40}
                   quality={100}
-                  className="rounded-md"
+                  className="rounded-xl"
                 />
                 <div className="truncate">
                   <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
