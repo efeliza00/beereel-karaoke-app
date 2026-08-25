@@ -4,7 +4,12 @@ import "youtube-video-element";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { Mic } from "lucide-react";
-import { Maximize2, Minimize2 } from "lucide-react";
+import {
+  Maximize2,
+  Minimize2,
+  RectangleHorizontal,
+  RectangleVertical,
+} from "lucide-react";
 import {
   VideoPlayer,
   VideoPlayerControlBar,
@@ -59,6 +64,8 @@ export default function StagePlayer({
   const mediaRef = useRef<HTMLElement | null>(null);
   const frameRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const onEndedRef = useRef(onEnded);
   const pendingRemoteRef = useRef<{ type: string; expires: number } | null>(
     null,

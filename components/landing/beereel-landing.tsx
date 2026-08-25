@@ -127,12 +127,12 @@ export default function BeereelLanding() {
         <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-amber-500/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <Hexagon className="w-6 h-6 text-slate-950 fill-amber-300 stroke-amber-950 stroke-2" />
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                  <Hexagon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-950 fill-amber-300 stroke-amber-950 stroke-2" />
                 </div>
-                <div>
-                  <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
+                <div className="truncate">
+                  <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
                     Beereel
                   </span>
                 </div>
@@ -150,13 +150,14 @@ export default function BeereelLanding() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <Button
                   onClick={() => handleNavigate("create-or-join", "join")}
-                  className="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:from-amber-300 hover:to-amber-500 shadow-lg shadow-amber-500/25 border border-amber-300/50 cursor-pointer"
+                  size="sm"
+                  className="h-9 px-3 sm:h-10 sm:px-4 text-xs sm:text-sm gap-1.5 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:from-amber-300 hover:to-amber-500 shadow-lg shadow-amber-500/25 border border-amber-300/50 cursor-pointer"
                 >
                   <PlayIcon size={16} animateOnHover />
-                  Enter Honeycomb
+                  <span className="whitespace-nowrap">Enter Honeycomb</span>
                 </Button>
               </div>
             </div>

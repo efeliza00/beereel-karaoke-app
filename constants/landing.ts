@@ -1,15 +1,15 @@
 "use client";
 
-import { Music } from "lucide-react";
 import {
-  MicIcon,
-  UsersIcon,
+  FlameIcon,
   HeartIcon,
+  MicIcon,
+  RadioIcon,
   SparklesIcon,
   UserRoundPlusIcon,
-  FlameIcon,
-  RadioIcon,
+  UsersIcon,
 } from "lucide-animated";
+import { Music } from "lucide-react";
 
 export const SITE_CONFIG = {
   name: "Beereel",
@@ -156,7 +156,7 @@ export const BEEHIVE_FEATURES = [
     icon: FlameIcon,
     step: "03",
     title: "Earn Nectar & Rank Up",
-    desc: "Get hyped with virtual honey gifts, live emoji cheers, and unlock golden leaderboard badges.",
+    desc: "Get hyped with  live emoji cheers.",
   },
 ];
 

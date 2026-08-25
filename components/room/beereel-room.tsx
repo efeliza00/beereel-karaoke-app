@@ -785,7 +785,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         </section>
 
         {/* Right Panel — Queue / Search / SongList */}
-        <aside className="min-h-[500px] lg:min-h-[600px] flex flex-col gap-3">
+        <aside className="min-h-[500px] lg:min-h-[600px] pb-20 md:pb-0 flex flex-col gap-3">
           <HiveTabs
             queue={queue}
             history={history}
@@ -819,8 +819,16 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             }}
           />
 
-          <ReactionPicker onReact={handleReact} />
+          <ReactionPicker onReact={handleReact} className="hidden md:flex" />
         </aside>
+
+        {/* Mobile — floating reaction dock */}
+        <div className="fixed bottom-4 inset-x-0 z-40 flex justify-center px-4 pointer-events-none md:hidden">
+          <ReactionPicker
+            onReact={handleReact}
+            className="pointer-events-auto border-amber-500/30 bg-slate-950/90 shadow-2xl shadow-amber-500/25"
+          />
+        </div>
       </div>
     </div>
   );
