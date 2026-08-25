@@ -7,6 +7,14 @@ import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-tic
 import SwarmCursor from "@/components/SwarmCursor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -661,9 +669,125 @@ export default function BeereelLanding() {
         </section>
 
         {/* Footer */}
-        <footer className="py-8 border-t border-amber-500/20 text-center text-xs text-slate-500 relative z-10">
-          &copy; {new Date().getFullYear()} {SITE_CONFIG.name}. All rights
-          reserved.
+        <footer className="py-12 border-t border-amber-500/20 text-center text-xs text-slate-500 relative z-10 flex flex-col items-center gap-4">
+          <div className="flex items-center gap-6 mb-2">
+            <Dialog>
+              <DialogTrigger
+                render={
+                  <button className="hover:text-amber-400 transition-colors cursor-pointer" />
+                }
+              >
+                Terms of Service
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl bg-slate-900 border-amber-500/20 text-slate-200 rounded-3xl overflow-hidden">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-black text-amber-400">
+                    Terms of Service
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-400">
+                    Last updated: {new Date().toLocaleDateString()}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar text-left py-4">
+                  <section>
+                    <h4 className="text-amber-300 font-bold mb-1">
+                      1. The Hive Rules
+                    </h4>
+                    <p className="text-xs leading-relaxed">
+                      Beereel is a platform for synchronized karaoke. By
+                      creating or joining a &quot;Hive&quot;, you agree to use
+                      the service for entertainment purposes only. Don&apos;t be
+                      a buzzkill—respect other singers.
+                    </p>
+                  </section>
+                  <section>
+                    <h4 className="text-amber-300 font-bold mb-1">
+                      2. Content & Media
+                    </h4>
+                    <p className="text-xs leading-relaxed">
+                      All video content is streamed via third-party providers
+                      (YouTube). We do not host the media files. Users are
+                      responsible for complying with the content provider&apos;s
+                      terms. Please ensure your song choices respect copyright
+                      and community standards.
+                    </p>
+                  </section>
+                  <section>
+                    <h4 className="text-amber-300 font-bold mb-1">
+                      3. Room Privacy
+                    </h4>
+                    <p className="text-xs leading-relaxed">
+                      Hosts have full authority over their Hives, including the
+                      ability to lock rooms, manage the queue, and remove
+                      participants. Joining a room means you accept the
+                      host&apos;s moderation.
+                    </p>
+                  </section>
+                  <section>
+                    <h4 className="text-amber-300 font-bold mb-1">
+                      4. Real-time Data
+                    </h4>
+                    <p className="text-xs leading-relaxed">
+                      We use Supabase Realtime for synchronization. Your
+                      presence (name and host status) is visible to other
+                      members of the same hive. Temporary room state is stored
+                      to ensure the music stays in sync.
+                    </p>
+                  </section>
+                  <section>
+                    <h4 className="text-amber-300 font-bold mb-1">
+                      5. Limitation of Liability
+                    </h4>
+                    <p className="text-xs leading-relaxed">
+                      Beereel is provided &quot;as is&quot;. We aren&apos;t
+                      liable for off-key singing, missed high notes, or
+                      synchronized playback drift due to internet latency. Rock
+                      on at your own risk.
+                    </p>
+                  </section>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger
+                render={
+                  <button className="hover:text-amber-400 transition-colors cursor-pointer" />
+                }
+              >
+                Privacy Policy
+              </DialogTrigger>
+              <DialogContent className="max-w-xl bg-slate-900 border-amber-500/20 text-slate-200 rounded-3xl">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-black text-amber-400">
+                    Privacy Policy
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-400">
+                    How we handle your bee data.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 text-left py-4">
+                  <p className="text-xs leading-relaxed">
+                    We believe in privacy. Beereel does not require accounts or
+                    email registration. Your &quot;Bee Name&quot; and room
+                    preferences are stored locally on your device
+                    (sessionStorage) and shared temporarily with other hive
+                    members via encrypted real-time channels to enable
+                    synchronization.
+                  </p>
+                  <p className="text-xs leading-relaxed">
+                    Room states (queues and history) are persisted to a
+                    temporary database to allow rooms to survive refreshes. No
+                    permanent personal profiles are created.
+                  </p>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <p className="opacity-60">
+            &copy; {new Date().getFullYear()} {SITE_CONFIG.name}. All rights
+            reserved.
+          </p>
         </footer>
       </div>
     </SwarmCursor>
