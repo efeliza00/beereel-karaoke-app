@@ -1,0 +1,22 @@
+{
+  "name": "Beereel — Sing Together, Anywhere",
+  "short_name": "Beereel",
+  "description": "Create a hive, invite your friends, and karaoke together in real time.",
+  "icons": [
+    {
+      "src": "/logo/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#0f172a",
+  "background_color": "#020617",
+  "display": "standalone"
+}
