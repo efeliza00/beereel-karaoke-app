@@ -15,7 +15,7 @@ type NumberTickerProps = {
  * NumberTicker 05 - Stats Counter
  * High-fidelity statistics tracker.
  */
-function NumberTicker({
+export function NumberTicker({
   value,
   label,
   decimals = 0,

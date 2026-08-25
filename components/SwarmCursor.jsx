@@ -157,7 +157,7 @@ const SwarmCursor = ({
   enabled = true,
   children,
   className = '',
-  style,
+  style = undefined,
   ...rest
 }) => {
   const containerRef = useRef(null);
@@ -578,7 +578,7 @@ const SwarmCursor = ({
   return (
     <div ref={containerRef} className={`relative w-full h-full ${className}`.trim()} style={style} {...rest}>
       {children ? (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">{children}</div>
+        <div className="relative z-10">{children}</div>
       ) : null}
     </div>
   );
