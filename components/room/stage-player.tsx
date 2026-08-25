@@ -30,6 +30,7 @@ import {
   type ReactionEmojiId,
 } from "@/components/room/live-reactions";
 import { AnimatePresence, motion } from "motion/react";
+import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-ticker-01";
 
 export type NectarScore = {
   nectars: number;
@@ -293,9 +294,12 @@ export default function StagePlayer({
                 aria-hidden="true"
               />
             </div>
-            <p className="text-4xl sm:text-5xl font-black leading-none text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 drop-shadow-lg">
-              +{nectarScore.nectars}
-            </p>
+            <NumberTicker
+              end={nectarScore.nectars}
+              start={0}
+              duration={1.5}
+              className="text-4xl sm:text-5xl font-black leading-none text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400 drop-shadow-lg"
+            />
             <p className="text-sm font-black uppercase tracking-widest text-amber-300">
               Nectars
             </p>
