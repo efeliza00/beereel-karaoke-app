@@ -1,4 +1,4 @@
-import { CheckCircle, Sparkles, Wrench, type LucideIcon } from "lucide-react";
+import { CircleCheck, Sparkles, Wrench, type LucideIcon } from "lucide-react";
 
 export type ChangelogItemIcon = "fix" | "update" | "check";
 
@@ -42,7 +42,7 @@ export const ITEM_ICONS: {
   {
     value: "check",
     label: "Check",
-    icon: CheckCircle,
+    icon: CircleCheck,
     className: "text-green-500",
   },
 ];
@@ -56,7 +56,7 @@ export const ITEM_SECTIONS: {
   {
     value: "check",
     label: "New",
-    icon: CheckCircle,
+    icon: CircleCheck,
     className: "text-emerald-500",
   },
   {
