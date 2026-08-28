@@ -77,7 +77,7 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
 
   if (entries.length === 0) {
     return (
-      <Card className="rounded-4xl">
+      <Card className="rounded-xl">
         <CardContent className="flex flex-col items-center py-16 text-center">
           <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-[#fde68a] to-[#fbbf24] text-[#78350f] shadow-neumorph-inset-sm">
             <Plus className="size-8" />
@@ -99,7 +99,7 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
 
   return (
     <>
-      <Card className="w-full gap-6 overflow-hidden rounded-4xl pb-0 pt-6">
+      <Card className="w-full gap-6 overflow-hidden rounded-xl pb-0 pt-6">
         <CardHeader className="px-6">
           <CardTitle className="text-lg font-bold">Entries</CardTitle>
           <CardDescription>
@@ -206,7 +206,7 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
           if (!open) setViewEntry(null);
         }}
       >
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="rounded-xl sm:max-w-lg">
           {viewEntry ? (
             <>
               <DialogHeader>
@@ -242,8 +242,13 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
                   {viewEntry.listItems.map((item, i) => {
                     const meta = itemIconOf(item.icon as ChangelogItemIcon);
                     return (
-                      <li key={i} className="flex items-center gap-2 text-sm">
-                        <meta.icon className={`size-4 ${meta.className}`} />
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-sm"
+                      >
+                        <meta.icon
+                          className={`mt-0.5 size-4 shrink-0 ${meta.className}`}
+                        />
                         <span>{item.text}</span>
                       </li>
                     );
@@ -262,7 +267,7 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
           if (!open) setDeleteEntry(null);
         }}
       >
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="rounded-xl sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete entry</DialogTitle>
             <DialogDescription>

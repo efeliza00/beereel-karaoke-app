@@ -89,7 +89,7 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
   }
 
   return (
-    <Card className="w-full max-w-3xl rounded-4xl">
+    <Card className="w-full max-w-3xl rounded-xl">
       <CardHeader>
         <CardTitle className="text-lg font-bold">
           {isEdit ? "Edit Changelog Entry" : "Add Changelog Entry"}
@@ -104,6 +104,7 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
               placeholder="1.0.0"
               disabled={isPending}
               aria-invalid={!!errors.version}
+              className="rounded-lg"
               {...register("version")}
             />
             {errors.version ? (
@@ -120,6 +121,7 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
               placeholder="What changed"
               disabled={isPending}
               aria-invalid={!!errors.title}
+              className="rounded-lg"
               {...register("title")}
             />
             {errors.title ? (
@@ -133,6 +135,7 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
               id="description"
               placeholder="Describe the change"
               disabled={isPending}
+              className="rounded-lg"
               {...register("description")}
             />
           </div>
@@ -183,7 +186,7 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className="grid gap-2 rounded-2xl border border-border/60 bg-background/40 p-3"
+                  className="grid gap-2 rounded-lg border border-border/60 bg-background/40 p-3"
                 >
                   <Label className="text-xs text-muted-foreground">
                     Item {index + 1}
@@ -193,6 +196,7 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
                       placeholder="Item text"
                       disabled={isPending}
                       aria-invalid={!!errors.listItems?.[index]?.text}
+                      className="rounded-lg"
                       {...register(`listItems.${index}.text`)}
                     />
                     <Controller

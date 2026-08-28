@@ -115,13 +115,13 @@ export default async function AdminDashboardPage() {
         {STAT_CONFIG.map((stat) => (
           <Card
             key={stat.key}
-            className="group transition-all duration-300 hover:-translate-y-0.5 hover:shadow-neumorph"
+            className="group rounded-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-neumorph"
           >
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 {stat.label}
               </CardTitle>
-              <div className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fde68a] to-[#fbbf24] text-[#78350f] shadow-neumorph-inset-sm">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#fde68a] to-[#fbbf24] text-[#78350f] shadow-neumorph-inset-sm">
                 <stat.icon className="size-5" />
               </div>
             </CardHeader>
@@ -137,7 +137,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Trending songs */}
-      <Card className="rounded-4xl">
+      <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg font-bold">
             <TrendingUp className="size-5 text-amber-600" />
@@ -186,10 +186,10 @@ export default async function AdminDashboardPage() {
                       alt={song.title}
                       width={48}
                       height={48}
-                      className="size-12 shrink-0 rounded-xl bg-muted object-cover"
+                      className="size-12 shrink-0 rounded-lg bg-muted object-cover"
                     />
                   ) : (
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted">
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted">
                       <Music className="size-5 text-muted-foreground" />
                     </div>
                   )}
