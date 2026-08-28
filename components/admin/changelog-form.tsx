@@ -33,6 +33,7 @@ import {
   itemIconOf,
   type ChangelogEntry,
   type ChangelogItemIcon,
+  type ChangelogStatus,
 } from "@/lib/changelog-meta";
 import { changelogEntrySchema, type ChangelogEntryValues } from "@/lib/validations";
 
@@ -72,13 +73,13 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
     name: "listItems",
   });
 
-  function onSubmit(data: ChangelogEntryValues) {
+  function onSubmit(data: ChangelogEntryValues, status: ChangelogStatus) {
     startTransition(async () => {
       try {
         if (isEdit && entry) {
-          await updateChangelogEntry(entry.id, data);
+          await updateChangelogEntry(entry.id, data, status);
         } else {
-          await createChangelogEntry(data);
+          await createChangelogEntry(data, status);
         }
         router.refresh();
         router.push("/admin/changelog");
@@ -96,7 +97,10 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-5">
+        <form
+          onSubmit={handleSubmit((data) => onSubmit(data, "draft"))}
+          className="grid gap-5"
+        >
           <div className="grid gap-2">
             <Label htmlFor="version">Version</Label>
             <Input
@@ -273,7 +277,7 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
             </Button>
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-border pt-5">
+          <div className="flex items-center justify-end gap-3 border-t border-border pt-5">
             <Button
               type="button"
               variant="ghost"
@@ -282,13 +286,24 @@ export function ChangelogForm({ entry }: { entry?: ChangelogEntry }) {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" variant="outline" disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Save as Draft"
+              )}
+            </Button>
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={handleSubmit((data) => onSubmit(data, "published"))}
+            >
               {isPending ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : isEdit ? (
-                "Save Changes"
+                "Save & Publish"
               ) : (
-                "Add Entry"
+                "Publish"
               )}
             </Button>
           </div>

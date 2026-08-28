@@ -1,19 +1,25 @@
 "use client";
 
 import {
+  Archive,
   CalendarDays,
   EllipsisVertical,
   Eye,
   Loader2,
   Pencil,
   Plus,
+  Send,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { deleteChangelogEntry } from "@/app/admin/(dashboard)/changelog/actions";
+import {
+  deleteChangelogEntry,
+  publishChangelogEntry,
+  unpublishChangelogEntry,
+} from "@/app/admin/(dashboard)/changelog/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,6 +52,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  STATUS_STYLES,
   TYPE_STYLES,
   itemIconOf,
   type ChangelogEntry,
@@ -71,6 +78,20 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
     startTransition(async () => {
       await deleteChangelogEntry(deleteEntry.id);
       setDeleteEntry(null);
+      router.refresh();
+    });
+  }
+
+  function handleStatusChange(
+    id: string,
+    action: "publish" | "unpublish",
+  ) {
+    startTransition(async () => {
+      if (action === "publish") {
+        await publishChangelogEntry(id);
+      } else {
+        await unpublishChangelogEntry(id);
+      }
       router.refresh();
     });
   }
@@ -104,7 +125,7 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
           <CardTitle className="text-lg font-bold">Entries</CardTitle>
           <CardDescription>
             {entries.length} changelog{" "}
-            {entries.length === 1 ? "entry" : "entries"} published.
+            {entries.length === 1 ? "entry" : "entries"}.
           </CardDescription>
         </CardHeader>
         <CardContent className="px-0">
@@ -115,6 +136,7 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
                   <TableHead className="w-12 p-3 ps-6">#</TableHead>
                   <TableHead className="p-2">Entry</TableHead>
                   <TableHead className="p-2">Type</TableHead>
+                  <TableHead className="p-2">Status</TableHead>
                   <TableHead className="p-2">Version</TableHead>
                   <TableHead className="p-3 pe-6 text-right">Actions</TableHead>
                 </TableRow>
@@ -145,6 +167,12 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
                         }
                       >
                         {entry.type}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell className="whitespace-nowrap p-2">
+                      <Badge className={STATUS_STYLES[entry.status]}>
+                        {entry.status === "published" ? "Published" : "Draft"}
                       </Badge>
                     </TableCell>
 
@@ -179,6 +207,27 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
                               <Pencil className="size-4" />
                               Edit
                             </DropdownMenuItem>
+                            {entry.status === "published" ? (
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() =>
+                                  handleStatusChange(entry.id, "unpublish")
+                                }
+                              >
+                                <Archive className="size-4" />
+                                Unpublish
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                className="cursor-pointer"
+                                onClick={() =>
+                                  handleStatusChange(entry.id, "publish")
+                                }
+                              >
+                                <Send className="size-4" />
+                                Publish
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               variant="destructive"
                               className="cursor-pointer"
@@ -218,6 +267,11 @@ export function ChangelogTable({ entries }: { entries: ChangelogEntry[] }) {
                     }
                   >
                     {viewEntry.type}
+                  </Badge>
+                  <Badge className={STATUS_STYLES[viewEntry.status]}>
+                    {viewEntry.status === "published"
+                      ? "Published"
+                      : "Draft"}
                   </Badge>
                   <span className="font-mono text-xs text-muted-foreground">
                     v{viewEntry.version}

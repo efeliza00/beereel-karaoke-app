@@ -10,7 +10,16 @@ function normalize<T extends { listItems: unknown }>(entry: T) {
 
 export async function getChangelog(): Promise<ChangelogEntry[]> {
   const entries = await prisma.changelogEntry.findMany({
-    orderBy: { date: "desc" },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return entries.map((entry) => normalize(entry) as unknown as ChangelogEntry);
+}
+
+export async function getPublishedChangelog(): Promise<ChangelogEntry[]> {
+  const entries = await prisma.changelogEntry.findMany({
+    where: { status: "published" },
+    orderBy: { publishedAt: "desc" },
   });
 
   return entries.map((entry) => normalize(entry) as unknown as ChangelogEntry);

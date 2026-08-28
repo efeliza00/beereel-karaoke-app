@@ -2,6 +2,8 @@ import { CircleCheck, Sparkles, Wrench, type LucideIcon } from "lucide-react";
 
 export type ChangelogItemIcon = "fix" | "update" | "check";
 
+export type ChangelogStatus = "draft" | "published";
+
 export type ChangelogListItem = {
   text: string;
   icon: ChangelogItemIcon;
@@ -15,6 +17,8 @@ export type ChangelogEntry = {
   type: string;
   date: Date;
   listItems: ChangelogListItem[];
+  status: ChangelogStatus;
+  publishedAt: Date | null;
   createdAt: Date;
 };
 
@@ -72,6 +76,11 @@ export const TYPE_STYLES: Record<string, string> = {
   feature: "bg-amber-100 text-amber-800",
   fix: "bg-red-100 text-red-800",
   improvement: "bg-green-100 text-green-800",
+};
+
+export const STATUS_STYLES: Record<ChangelogStatus, string> = {
+  draft: "bg-secondary text-muted-foreground",
+  published: "bg-green-100 text-green-800",
 };
 
 export function itemIconOf(value: ChangelogItemIcon) {

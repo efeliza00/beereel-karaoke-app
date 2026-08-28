@@ -37,6 +37,9 @@ model ChangelogEntry {
   
   // FIX: This correctly tells PostgreSQL to instantiate a valid, empty JSON array structure
   listItems   Json     @default(dbgenerated("'[]'::jsonb")) 
+
+  status      String    @default("draft") // "draft" | "published"
+  publishedAt DateTime?
   
   createdAt   DateTime @default(now())
 }

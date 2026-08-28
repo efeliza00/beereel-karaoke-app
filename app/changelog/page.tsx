@@ -11,7 +11,7 @@ import {
 } from "@/components/reui/timeline";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { Badge } from "@/components/ui/badge";
-import { getChangelog } from "@/lib/changelog";
+import { getPublishedChangelog } from "@/lib/changelog";
 import {
   ENTRY_TYPES,
   ITEM_SECTIONS,
@@ -40,7 +40,7 @@ function sectionsOf(entry: ChangelogEntry) {
 }
 
 export default async function ChangelogPage() {
-  const entries = await getChangelog();
+  const entries = await getPublishedChangelog();
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
@@ -134,7 +134,7 @@ export default async function ChangelogPage() {
                       </span>
                       <span className="ml-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                         <CalendarDays className="size-3.5" />
-                        {formatMonthYear(entry.date)}
+                        {formatMonthYear(entry.publishedAt ?? entry.date)}
                       </span>
                     </div>
 
