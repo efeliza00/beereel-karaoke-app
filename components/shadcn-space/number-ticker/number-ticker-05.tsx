@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import NumberFlow, { type Value } from "@number-flow/react";
 import { cn } from "@/lib/utils";
+import NumberFlow, { type Value } from "@number-flow/react";
+import { useEffect, useState } from "react";
 
 type NumberTickerProps = {
   value: Value;
@@ -23,10 +23,6 @@ export function NumberTicker({
 }: NumberTickerProps) {
   return (
     <div className={cn("inline-flex items-center gap-3", className)}>
-      <span className="relative flex h-3 w-3">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-      </span>
       <NumberFlow
         value={value}
         format={{
