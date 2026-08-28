@@ -75,7 +75,7 @@ export function LiveReactions({
         >
           {/* Phase 1 — show who reacted first */}
           <motion.span
-            className="rounded-full border border-white/10 bg-black/70 px-2 py-0.5 text-[10px] font-black whitespace-nowrap text-amber-200"
+            className="rounded-full border border-white/10 bg-[#3b2f21]/70 px-2 py-0.5 text-[10px] font-black whitespace-nowrap text-amber-200"
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.75] }}
             transition={{
@@ -117,7 +117,7 @@ export function ReactionPicker({
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-2 rounded-full border border-amber-500/25 bg-slate-900/60 px-5 py-2.5 shadow-lg shadow-amber-500/5 backdrop-blur",
+        "flex items-center justify-center gap-2 rounded-full border border-amber-500/25 bg-[#fdfaf3] px-5 py-2.5 shadow-lg shadow-amber-500/5 backdrop-blur",
         className,
       )}
     >

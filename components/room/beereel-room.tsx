@@ -1,39 +1,45 @@
 "use client";
 
-import { toast } from "sonner";
-import { BeeIcon } from "@/components/ui/bee-icon";
-import CopyButtonDemo from "@/components/shadcn-space/button/button-24";
 import HiveQrDialog from "@/components/room/hive-qr-dialog";
 import HiveTabs, { type QueueItem } from "@/components/room/hive-tabs";
 import StagePlayer from "@/components/room/stage-player";
-import { useRouter } from "next/navigation";
+import CopyButtonDemo from "@/components/shadcn-space/button/button-24";
 import { Badge } from "@/components/ui/badge";
+import { BeeIcon } from "@/components/ui/bee-icon";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogClose,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Crown, Hexagon, Lock, LogOut, Music4, HeartHandshake } from "lucide-react";
-import { useEffect, useState, useRef, useCallback } from "react";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { useHivePresence } from "@/lib/use-hive-presence";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import {
+  Crown,
+  HeartHandshake,
+  Hexagon,
+  Lock,
+  LogOut,
+  Music4,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import HiveSettingsDialog from "@/components/room/hive-settings-dialog";
-import MarqueeText from "@/components/room/marquee-text";
 import HiveTipsDialog from "@/components/room/hive-tips-dialog";
 import {
-  LiveReactions,
   ReactionPicker,
   type FloatingReaction,
   type ReactionEmojiId,
 } from "@/components/room/live-reactions";
+import MarqueeText from "@/components/room/marquee-text";
 
 type BeeIdentity = { name: string; isHost: boolean };
 
@@ -110,9 +116,7 @@ type RoomSnapshot = {
 
 function loadRoomSnapshot(roomId: string): RoomSnapshot | null {
   try {
-    const raw = localStorage.getItem(
-      `bee-state:${roomId.toUpperCase()}`,
-    );
+    const raw = localStorage.getItem(`bee-state:${roomId.toUpperCase()}`);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as RoomSnapshot;
     if (Array.isArray(parsed?.queue)) return parsed;
@@ -139,13 +143,15 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
   useEffect(() => {
     currentSongRef.current = currentSong;
   }, [currentSong]);
-  const mediaCommandRef = useRef<(cmd: { type: string; time?: number }) => void>(
-    () => {},
-  );
+  const mediaCommandRef = useRef<
+    (cmd: { type: string; time?: number }) => void
+  >(() => {});
   const hostIsPlayingRef = useRef(false);
-  const mediaVolumeRef = useRef<(vol: { muted: boolean; volume: number }) => void>(
-    () => {},
-  );
+  const hostCurrentTimeRef = useRef(0);
+  const mediaVolumeRef = useRef<
+    (vol: { muted: boolean; volume: number }) => void
+  >(() => {});
+
   const prevCount = useRef(0);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const settingsRef = useRef<HiveSettings>(DEFAULT_SETTINGS);
@@ -153,6 +159,25 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
   useEffect(() => {
     settingsRef.current = settings;
   }, [settings]);
+
+  // Non-host guests: when media control toggles mid-playback (on OR off),
+  // resync to the host's current playing state + time so they start right
+  // where it is in whichever view they land on.
+  const controlEnabled = Boolean(
+    identity?.isHost || settings.everyoneCanControl,
+  );
+  const wasControlEnabled = useRef(controlEnabled);
+  useEffect(() => {
+    if (!identity) return;
+    if (identity.isHost) return;
+    if (controlEnabled !== wasControlEnabled.current) {
+      void channelRef.current?.send({
+        type: "broadcast",
+        event: "request-sync",
+      });
+    }
+    wasControlEnabled.current = controlEnabled;
+  }, [controlEnabled, identity]);
 
   const hostStateRef = useRef<RoomSnapshot>({
     queue: [],
@@ -203,44 +228,41 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
     return () => clearTimeout(t);
   }, [identity, hostHydrated, queue, history, currentSong, roomId]);
 
-  const nowPlayingToast = useCallback(
-    (item: QueueItem) => {
-      toast.custom(
-        () => (
-          <div className="bg-slate-950/95 backdrop-blur-md text-slate-100 border-amber-500/30 rounded-[1.75rem] flex w-[24rem] max-w-[90vw] items-center gap-3 border p-5 shadow-xl shadow-amber-500/10 transition-all duration-300">
-            {item.thumbnail ? (
-              <img
-                src={item.thumbnail}
-                alt=""
-                className="size-12 shrink-0 rounded-full object-cover bg-slate-800"
-              />
-            ) : (
-              <div className="rounded-full flex size-12 shrink-0 items-center justify-center bg-amber-400 text-slate-950">
-                <Music4 className="size-6" aria-hidden="true" />
-              </div>
-            )}
-            <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">
-                Now Playing
-              </p>
-              <MarqueeText className="text-lg font-bold text-slate-100">
-                {item.title}
-              </MarqueeText>
-              <p className="text-slate-400/80 text-sm font-medium truncate">
-                {item.channel}
-              </p>
+  const nowPlayingToast = useCallback((item: QueueItem) => {
+    toast.custom(
+      () => (
+        <div className="bg-[#fdfaf3]/95 backdrop-blur-md text-[#3b2f21] border-amber-500/30 rounded-[1.75rem] flex w-[24rem] max-w-[90vw] items-center gap-3 border p-5 shadow-xl shadow-amber-500/10 transition-all duration-300">
+          {item.thumbnail ? (
+            <img
+              src={item.thumbnail}
+              alt=""
+              className="size-12 shrink-0 rounded-full object-cover bg-[#efe6d2]"
+            />
+          ) : (
+            <div className="rounded-full flex size-12 shrink-0 items-center justify-center bg-amber-400 text-[#3b2f21]">
+              <Music4 className="size-6" aria-hidden="true" />
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-[11px] text-red-300 font-semibold border border-red-500/20 uppercase tracking-wider shrink-0">
-              <span className="size-1.5 rounded-full bg-red-400 animate-pulse" />
-              Live
-            </span>
+          )}
+          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#b45309]">
+              Now Playing
+            </p>
+            <MarqueeText className="text-lg font-bold text-[#3b2f21]">
+              {item.title}
+            </MarqueeText>
+            <p className="text-[#857558]/80 text-sm font-medium truncate">
+              {item.channel}
+            </p>
           </div>
-        ),
-        { duration: 5000 },
-      );
-    },
-    [],
-  );
+          <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-[11px] text-red-700 font-semibold border border-red-500/20 uppercase tracking-wider shrink-0">
+            <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
+            Live
+          </span>
+        </div>
+      ),
+      { duration: 5000 },
+    );
+  }, []);
 
   const [nectarScore, setNectarScore] = useState<NectarPayload | null>(null);
   const nectarTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -254,26 +276,26 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
   const upNextToast = useCallback((item: QueueItem) => {
     toast.custom(
       () => (
-        <div className="bg-slate-950/95 backdrop-blur-md text-slate-100 border-amber-500/30 rounded-[1.75rem] flex w-[24rem] max-w-[90vw] items-center gap-3 border p-5 shadow-xl shadow-amber-500/10 transition-all duration-300">
+        <div className="bg-[#fdfaf3]/95 backdrop-blur-md text-[#3b2f21] border-amber-500/30 rounded-[1.75rem] flex w-[24rem] max-w-[90vw] items-center gap-3 border p-5 shadow-xl shadow-amber-500/10 transition-all duration-300">
           {item.thumbnail ? (
             <img
               src={item.thumbnail}
               alt=""
-              className="size-12 shrink-0 rounded-full object-cover bg-slate-800"
+              className="size-12 shrink-0 rounded-full object-cover bg-[#efe6d2]"
             />
           ) : (
-            <div className="rounded-full flex size-12 shrink-0 items-center justify-center bg-amber-400 text-slate-950">
+            <div className="rounded-full flex size-12 shrink-0 items-center justify-center bg-amber-400 text-[#3b2f21]">
               <Music4 className="size-6" aria-hidden="true" />
             </div>
           )}
           <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-400">
+            <p className="text-[10px] font-black uppercase tracking-widest text-[#b45309]">
               Up Next
             </p>
-            <MarqueeText className="text-lg font-bold text-slate-100">
+            <MarqueeText className="text-lg font-bold text-[#3b2f21]">
               {item.title}
             </MarqueeText>
-            <p className="text-slate-400/80 text-sm font-medium truncate">
+            <p className="text-[#857558]/80 text-sm font-medium truncate">
               {item.singer} is on the mic
             </p>
           </div>
@@ -302,20 +324,18 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
     });
   }, [nowPlayingToast]);
 
-  const spawnReaction = useCallback(    (emoji: ReactionEmojiId, from?: string) => {
-      const fr: FloatingReaction = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        emoji,
-        from,
-        x: 50 + Math.random() * 45,
-        size: 22 + Math.random() * 16,
-        duration: 2.4 + Math.random() * 1.6,
-        delay: Math.random() * 0.15,
-      };
-      setReactions((prev) => [...prev.slice(-29), fr]);
-    },
-    [],
-  );
+  const spawnReaction = useCallback((emoji: ReactionEmojiId, from?: string) => {
+    const fr: FloatingReaction = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      emoji,
+      from,
+      x: 50 + Math.random() * 45,
+      size: 22 + Math.random() * 16,
+      duration: 2.4 + Math.random() * 1.6,
+      delay: Math.random() * 0.15,
+    };
+    setReactions((prev) => [...prev.slice(-29), fr]);
+  }, []);
 
   const handleReact = useCallback(
     (emoji: ReactionEmojiId) => {
@@ -352,6 +372,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
 
     const channel = supabase.channel(`room:${roomId}`, {
       config: {
+        broadcast: { self: true },
         presence: {
           key: beeIdentity.name,
         },
@@ -363,10 +384,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
       .on("presence", { event: "sync" }, () => {
         if (!active) return;
 
-        const state = channel.presenceState() as Record<
-          string,
-          PresenceMeta[]
-        >;
+        const state = channel.presenceState() as Record<string, PresenceMeta[]>;
         const currentMembers: Member[] = Object.entries(state).map(
           ([key, refs]) => {
             const meta = refs[refs.length - 1] ?? {};
@@ -425,6 +443,41 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
           }
         }
       })
+      .on("presence", { event: "join" }, ({ key, newPresences }) => {
+        if (!active) return;
+        const meta = newPresences?.[newPresences.length - 1] ?? {};
+        const name = meta.name ?? key;
+        if (
+          name === beeIdentity.name ||
+          name.startsWith("Bee_") ||
+          name === "Bee"
+        ) {
+          // Ignore own join (handled separately) and auto-generated placeholders
+          return;
+        }
+        toast(`${name} joined the hive`, {
+          id: `bee-join-${key}`,
+          position: "bottom-center",
+          className: "bg-[#fdfaf3] text-[#3b2f21]",
+        });
+      })
+      .on("presence", { event: "leave" }, ({ key, leftPresences }) => {
+        if (!active) return;
+        const meta = leftPresences?.[leftPresences.length - 1] ?? {};
+        const name = meta.name ?? key;
+        if (
+          name === beeIdentity.name ||
+          name.startsWith("Bee_") ||
+          name === "Bee"
+        ) {
+          return;
+        }
+        toast(`${name} left the hive`, {
+          id: `bee-leave-${key}`,
+          position: "bottom-center",
+          className: "bg-[#fdfaf3] text-[#3b2f21]",
+        });
+      })
       .on("broadcast", { event: "hive-settings" }, ({ payload }) => {
         if (!active || beeIdentity.isHost) return;
 
@@ -439,7 +492,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
           mediaCommandRef.current(cmd);
         }
       })
-.on("broadcast", { event: "media-volume" }, ({ payload }) => {
+      .on("broadcast", { event: "media-volume" }, ({ payload }) => {
         if (!active) return;
         const vol = payload as { muted: boolean; volume: number };
         if (mediaVolumeRef.current) {
@@ -472,16 +525,12 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         }
       })
       .on("broadcast", { event: "queue-add" }, ({ payload }) => {
-        if (!active || beeIdentity.isHost) return;
+        if (!active) return;
 
         const item = payload as QueueItem;
-        if (beeIdentity.isHost) {
-          setQueue((prev) =>
-            prev.some((q) => q.videoId === item.videoId)
-              ? prev
-              : [...prev, item],
-          );
-        }
+        setQueue((prev) =>
+          prev.some((q) => q.videoId === item.videoId) ? prev : [...prev, item],
+        );
         // Toast removed
       })
       .on("broadcast", { event: "update-list" }, ({ payload }) => {
@@ -500,10 +549,20 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
           event: "sync-state",
           payload: {
             isPlaying: hostIsPlayingRef.current,
-            currentTime: 0, // will be filled by host
+            currentTime: hostCurrentTimeRef.current,
             muted: false,
             volume: 1,
           },
+        });
+      })
+      .on("broadcast", { event: "request-state" }, () => {
+        if (!active || !beeIdentity.isHost) return;
+
+        // Send the authoritative room snapshot to the newly joined client
+        void channelRef.current?.send({
+          type: "broadcast",
+          event: "update-list",
+          payload: hostStateRef.current,
         });
       })
       .on("broadcast", { event: "reaction" }, ({ payload }) => {
@@ -512,6 +571,9 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
           emoji: ReactionEmojiId;
           from?: string;
         };
+        // `self: true` echoes our own broadcast; we already spawned locally
+        // in handleReact, so skip to avoid doubling.
+        if (from === beeIdentity.name) return;
         spawnReaction(emoji, from);
       })
       .on("broadcast", { event: "now-playing-toast" }, ({ payload }) => {
@@ -532,9 +594,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             name: beeIdentity.name,
             is_host: beeIdentity.isHost,
             user_at: new Date().toISOString(),
-            ...(beeIdentity.isHost
-              ? { settings: settingsRef.current }
-              : {}),
+            ...(beeIdentity.isHost ? { settings: settingsRef.current } : {}),
           });
           setIdentity(beeIdentity);
           if (beeIdentity.isHost) {
@@ -549,9 +609,15 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
               type: "broadcast",
               event: "request-state",
             });
+            void channel.send({
+              type: "broadcast",
+              event: "request-sync",
+            });
           }
-          toast.success("A bee has joined the hive!", {
+          toast("You joined the hive", {
             id: `bee-${roomId}-join`,
+            position: "bottom-center",
+            className: "bg-[#fdfaf3] text-[#3b2f21]",
           });
         }
       });
@@ -566,16 +632,14 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
 
   useHivePresence(
     roomId,
-    identity
-      ? { name: identity.name, isHost: identity.isHost }
-      : undefined,
+    identity ? { name: identity.name, isHost: identity.isHost } : undefined,
   );
 
   const isBlocked = Boolean(
     identity &&
-      !identity.isHost &&
-      !admitted &&
-      (settings.roomLocked || onlineCount > settings.guestLimit),
+    !identity.isHost &&
+    !admitted &&
+    (settings.roomLocked || onlineCount > settings.guestLimit),
   );
 
   useEffect(() => {
@@ -585,24 +649,30 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         settings.roomLocked
           ? "The hive is locked by the host."
           : "The hive is full.",
+        {
+          className: "bg-[#fdfaf3] text-[#3b2f21]",
+        },
       );
     }
   }, [isBlocked, settings.roomLocked]);
 
   const initials = (name: string) =>
-    name.replace(/[^a-zA-Z0-9]/g, "").slice(0, 2).toUpperCase() || "BE";
+    name
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(0, 2)
+      .toUpperCase() || "BE";
 
   return (
-    <div className="min-h-dvh bg-slate-950 text-slate-100 font-sans flex flex-col">
+    <div className="min-h-dvh bg-[#f7f1e4] text-[#3b2f21] font-sans flex flex-col">
       {!isBlocked && <HiveTipsDialog reopenSignal={tipsReopen} />}
       {isBlocked && (
-        <div className="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-amber-500/25 rounded-2xl p-8 text-center max-w-sm shadow-2xl shadow-amber-500/10">
-            <Lock className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-            <h2 className="text-xl font-black text-amber-400 mb-2">
+        <div className="fixed inset-0 bg-[#f7f1e4]/90 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#fdfaf3] border border-amber-500/25 rounded-2xl p-8 text-center max-w-sm shadow-2xl shadow-amber-500/10">
+            <Lock className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-xl font-black text-amber-500 mb-2">
               {settings.roomLocked ? "This Hive is Locked" : "Hive is Full"}
             </h2>
-            <p className="text-sm text-slate-400 mb-6">
+            <p className="text-sm text-[#857558] mb-6">
               {settings.roomLocked
                 ? "The host has locked this hive room."
                 : `Capacity reached (${settings.guestLimit} bee${
@@ -611,7 +681,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             </p>
             <Button
               onClick={() => router.push("/")}
-              className="w-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 font-black hover:from-amber-300 hover:to-amber-400 cursor-pointer"
+              className="w-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-[#3b2f21] font-black hover:from-amber-300 hover:to-amber-400 cursor-pointer"
             >
               Back to Landing
             </Button>
@@ -620,18 +690,18 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
       )}
 
       {/* Room Navbar */}
-      <header className="sticky top-0 z-40 border-b border-amber-500/20 bg-slate-950/80 backdrop-blur-xl">
-        <div className="max-w-[1600px] mx-auto px-3 sm:px-4 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
+      <header className="sticky top-0 z-40 border-b border-amber-500/20 bg-[#fdfaf3]/80 backdrop-blur-xl">
+        <div className="w-full px-3 sm:px-4 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <Hexagon className="w-7 h-7 sm:w-8 sm:h-8 text-amber-400 shrink-0" />
             <div className="min-w-0">
               <h1 className="text-sm sm:text-base md:text-lg font-black leading-tight truncate">
                 Hive Room: {roomId}
               </h1>
-              <p className="text-[10px] sm:text-[11px] text-slate-400 flex items-center gap-1 font-bold truncate">
+              <p className="text-[10px] sm:text-[11px] text-[#857558] flex items-center gap-1 font-bold truncate">
                 Host:{" "}
                 {host ? (
-                  <span className="inline-flex items-center gap-1 text-amber-300">
+                  <span className="inline-flex items-center gap-1 text-[#b45309]">
                     <Crown size={11} /> {host.name}
                   </span>
                 ) : (
@@ -669,15 +739,97 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                 }}
               />
             )}
-            <span className="hidden md:flex items-center gap-1.5 text-sm text-slate-300 font-bold px-2 md:px-3">
-              <BeeIcon size={16} className="text-amber-400" />
-              {onlineCount}
-            </span>
+            <Dialog>
+              <DialogTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label="Show bees in the hive"
+                    className="hidden md:flex items-center gap-1.5 text-sm text-[#3b2f21] font-bold px-2 md:px-3 cursor-pointer hover:opacity-80 transition-opacity bg-transparent border-0"
+                  />
+                }
+              >
+                <BeeIcon size={16} className="text-amber-400" />
+                {onlineCount}
+              </DialogTrigger>
+              <DialogContent className="data-open:slide-in-from-top-8 data-closed:slide-out-to-top-8 data-open:zoom-in-100 data-closed:zoom-out-100 duration-300 [[data-slot=dialog-overlay]:has(~_&)]:duration-300">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <BeeIcon size={16} className="text-amber-400" />
+                    Bees in the Hive
+                  </DialogTitle>
+                  <DialogDescription>
+                    {onlineCount} bee{onlineCount !== 1 ? "s" : ""} currently
+                    singing in room {roomId}.
+                  </DialogDescription>
+                </DialogHeader>
+                <ul className="max-h-80 overflow-y-auto space-y-1.5 pr-1">
+                  {members.map((m) => (
+                    <li
+                      key={m.key}
+                      className={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
+                        m.isHost
+                          ? "border-[#f59e0b]/50 bg-[#f59e0b]/10"
+                          : "border-[#eadfc9] bg-[#fdfaf3]/60"
+                      }`}
+                    >
+                      <span
+                        className={`size-8 shrink-0 rounded-full border flex items-center justify-center text-[11px] font-black ${
+                          m.isHost
+                            ? "border-[#f59e0b] bg-[#f59e0b]/20 text-[#b45309]"
+                            : "border-[#eadfc9] bg-[#efe6d2] text-[#857558]"
+                        }`}
+                      >
+                        {initials(m.name)}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold truncate flex items-center gap-1.5">
+                          {m.isHost && (
+                            <Crown
+                              size={12}
+                              className="text-amber-500 shrink-0"
+                            />
+                          )}
+                          <span
+                            className={
+                              m.isHost ? "text-[#b45309]" : "text-[#3b2f21]"
+                            }
+                          >
+                            {m.name}
+                          </span>
+                          {m.isMe && (
+                            <span className="text-[10px] uppercase tracking-wider text-amber-500">
+                              (You)
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-[11px] text-[#857558] font-medium">
+                          {m.joinedAt
+                            ? `Joined ${new Date(m.joinedAt).toLocaleTimeString(
+                                [],
+                                { hour: "2-digit", minute: "2-digit" },
+                              )}`
+                            : "In the hive"}
+                        </p>
+                      </div>
+                      {m.isHost && (
+                        <Badge
+                          variant="outline"
+                          className="text-[#b45309] border-[#f59e0b]/40 shrink-0 text-[10px]"
+                        >
+                          HOST
+                        </Badge>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </DialogContent>
+            </Dialog>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setTipsReopen((n) => n + 1)}
-              className="gap-1.5 cursor-pointer border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:text-amber-200 px-2.5 sm:px-3"
+              className="gap-1.5 cursor-pointer border-[#f59e0b]/40 text-[#b45309] hover:bg-[#f59e0b]/10 hover:text-[#451a03] px-2.5 sm:px-3"
             >
               <HeartHandshake size={14} />
               <span className="hidden xs:inline sm:inline">Tip</span>
@@ -696,16 +848,16 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                 <span className="hidden xs:inline sm:inline">Leave</span>
               </DialogTrigger>
               <DialogContent
-                className="data-open:slide-in-from-top-8 data-closed:slide-out-to-top-8 data-open:zoom-in-100 data-closed:zoom-out-100 duration-300 [[data-slot=dialog-overlay]:has(~_&)]:duration-300 border-slate-800 bg-slate-950 max-w-xs"
+                className="data-open:slide-in-from-top-8 data-closed:slide-out-to-top-8 data-open:zoom-in-100 data-closed:zoom-out-100 duration-300 [[data-slot=dialog-overlay]:has(~_&)]:duration-300 border-[#eadfc9] bg-[#fdfaf3] max-w-xs"
                 showCloseButton={false}
               >
                 <div className="flex flex-col items-center text-center gap-4">
-                  <div className="flex items-center justify-center size-12 rounded-full bg-red-500/10 text-red-400">
+                  <div className="flex items-center justify-center size-12 rounded-full bg-red-500/10 text-red-600">
                     <LogOut size={20} />
                   </div>
                   <DialogHeader className="items-center">
                     <DialogTitle>Leave the hive?</DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-[#857558]">
                       You will stop watching the performance. The queue stays
                       alive — you can rejoin anytime.
                     </DialogDescription>
@@ -715,7 +867,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                       render={
                         <Button
                           variant="outline"
-                          className="flex-1 cursor-pointer border-slate-700 hover:bg-slate-800"
+                          className="flex-1 cursor-pointer border-[#eadfc9] hover:bg-[#efe6d2]"
                         />
                       }
                     >
@@ -741,131 +893,15 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
       </header>
 
       {/* 3/4 Stage + 1/4 Reserved Panel */}
-      <div className="flex-1 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-5 p-4 md:p-6 items-start">
+      <div className="flex-1 w-full grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-5 px-4 pt-0 pb-4 md:p-6 lg:px-6 items-start">
         {/* Video Section */}
-        <section className="space-y-4 min-w-0">
-          {/* Stage Sub-navbar */}
-          <nav className="h-12 rounded-xl border border-amber-500/20 bg-slate-900/50 backdrop-blur px-4 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <Badge
-                variant="outline"
-                className="text-amber-300 border-amber-500/40 shrink-0"
-              >
-                LIVE
-              </Badge>
-              <span className="text-xs font-black uppercase tracking-wider text-slate-400 truncate">
-                Now Singing on the Hexagonal Stage
-              </span>
-              <span className="hidden sm:flex items-end gap-0.5 h-3 shrink-0">
-                <span className="w-0.5 h-full bg-amber-400 animate-pulse" />
-                <span className="w-0.5 h-2/3 bg-amber-400 animate-bounce" />
-                <span className="w-0.5 h-full bg-amber-400 animate-pulse" />
-              </span>
-            </div>
-            <Dialog>
-              <DialogTrigger
-                render={
-                  <button
-                    type="button"
-                    aria-label="Show everyone in the hive"
-                    className="flex items-center -space-x-1.5 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 hover:opacity-90 transition-opacity"
-                  />
-                }
-              >
-                {members.slice(0, 5).map((m) => (
-                  <span
-                    key={m.key}
-                    className={`size-7 rounded-full border flex items-center justify-center text-[10px] font-black ${
-                      m.isHost
-                        ? "border-amber-400 bg-amber-500/20 text-amber-300 z-10"
-                        : "border-slate-600 bg-slate-800 text-slate-300"
-                    } ${m.isMe ? "ring-2 ring-amber-400/60" : ""}`}
-                  >
-                    {initials(m.name)}
-                  </span>
-                ))}
-                {members.length > 5 && (
-                  <span className="size-7 rounded-full border border-slate-600 bg-slate-800 text-slate-300 flex items-center justify-center text-[10px] font-black">
-                    +{members.length - 5}
-                  </span>
-                )}
-              </DialogTrigger>
-              <DialogContent className="data-open:slide-in-from-top-8 data-closed:slide-out-to-top-8 data-open:zoom-in-100 data-closed:zoom-out-100 duration-300 [[data-slot=dialog-overlay]:has(~_&)]:duration-300">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <BeeIcon size={16} className="text-amber-400" />
-                    Bees in the Hive
-                  </DialogTitle>
-                  <DialogDescription>
-                    {onlineCount} bee{onlineCount !== 1 ? "s" : ""} currently
-                    singing in room {roomId}.
-                  </DialogDescription>
-                </DialogHeader>
-                <ul className="max-h-80 overflow-y-auto space-y-1.5 pr-1">
-                  {members.map((m) => (
-                    <li
-                      key={m.key}
-                      className={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
-                        m.isHost
-                          ? "border-amber-400/50 bg-amber-500/10"
-                          : "border-slate-800 bg-slate-900/60"
-                      }`}
-                    >
-                      <span
-                        className={`size-8 shrink-0 rounded-full border flex items-center justify-center text-[11px] font-black ${
-                          m.isHost
-                            ? "border-amber-400 bg-amber-500/20 text-amber-300"
-                            : "border-slate-600 bg-slate-800 text-slate-300"
-                        }`}
-                      >
-                        {initials(m.name)}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold truncate flex items-center gap-1.5">
-                          {m.isHost && (
-                            <Crown size={12} className="text-amber-400 shrink-0" />
-                          )}
-                          <span
-                            className={
-                              m.isHost ? "text-amber-300" : "text-slate-200"
-                            }
-                          >
-                            {m.name}
-                          </span>
-                          {m.isMe && (
-                            <span className="text-[10px] uppercase tracking-wider text-amber-400">
-                              (You)
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-[11px] text-slate-500 font-medium">
-                          {m.joinedAt
-                            ? `Joined ${new Date(m.joinedAt).toLocaleTimeString(
-                                [],
-                                { hour: "2-digit", minute: "2-digit" },
-                              )}`
-                            : "In the hive"}
-                        </p>
-                      </div>
-                      {m.isHost && (
-                        <Badge
-                          variant="outline"
-                          className="text-amber-300 border-amber-500/40 shrink-0 text-[10px]"
-                        >
-                          HOST
-                        </Badge>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </DialogContent>
-            </Dialog>
-          </nav>
-
+        <section className="space-y-2 min-w-0 -mx-4 md:mx-0">
           {/* Video Player Area */}
           <StagePlayer
             video={currentSong}
-            canControl={Boolean(identity?.isHost || settings.everyoneCanControl)}
+            canControl={Boolean(
+              identity?.isHost || settings.everyoneCanControl,
+            )}
             onMediaControl={(cmd) => {
               if (cmd.type === "play") hostIsPlayingRef.current = true;
               else if (cmd.type === "pause") hostIsPlayingRef.current = false;
@@ -882,7 +918,9 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                 payload: vol,
               });
             }}
+            onTimeUpdate={(time) => (hostCurrentTimeRef.current = time)}
             onVolumeCommand={(cb) => (mediaVolumeRef.current = cb)}
+            onMediaCommand={(cb) => (mediaCommandRef.current = cb)}
             reactions={reactions}
             onReactionComplete={(id) =>
               setReactions((prev) => prev.filter((r) => r.id !== id))
@@ -946,13 +984,17 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             queue={queue}
             history={history}
             currentSong={currentSong}
-            canAddToQueue={Boolean(identity?.isHost || settings.everyoneCanSing)}
+            canAddToQueue={Boolean(
+              identity?.isHost || settings.everyoneCanSing,
+            )}
             canPlay={Boolean(identity?.isHost)}
             singerName={identity?.name ?? "A bee"}
             onSongPlay={(item) => {
               if (!identity?.isHost) return;
               const stamped = { ...item, playedAt: new Date().toISOString() };
-              setQueue((prev) => prev.filter((q) => q.videoId !== item.videoId));
+              setQueue((prev) =>
+                prev.filter((q) => q.videoId !== item.videoId),
+              );
               setHistory((prev) => [stamped, ...prev].slice(0, 50));
               setCurrentSong(stamped);
             }}
@@ -971,6 +1013,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
               });
               toast.success(`"${item.title}" added to the queue`, {
                 id: `bee-${roomId}-queue-self`,
+                className: "bg-[#fdfaf3] text-[#3b2f21]",
               });
             }}
           />
@@ -982,7 +1025,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         <div className="fixed bottom-4 inset-x-0 z-40 flex justify-center px-4 pointer-events-none md:hidden">
           <ReactionPicker
             onReact={handleReact}
-            className="pointer-events-auto border-amber-500/30 bg-slate-950/90 shadow-2xl shadow-amber-500/25"
+            className="pointer-events-auto border-[#eadfc9] bg-[#fdfaf3]/90 shadow-2xl shadow-amber-500/25"
           />
         </div>
       </div>
