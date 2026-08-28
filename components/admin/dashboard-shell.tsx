@@ -4,10 +4,6 @@ import {
   Gauge,
   History,
   LogOut,
-  Mic,
-  PartyPopper,
-  Settings,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -36,11 +32,7 @@ import Image from "next/image";
 
 const items = [
   { title: "Overview", href: "/admin", icon: Gauge },
-  { title: "Rooms", href: "/admin/rooms", icon: Mic },
-  { title: "Gifts", href: "/admin/gifts", icon: PartyPopper },
   { title: "Changelog", href: "/admin/changelog", icon: History },
-  { title: "Members", href: "/admin/members", icon: Users },
-  { title: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
