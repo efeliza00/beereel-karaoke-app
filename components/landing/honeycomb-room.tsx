@@ -1,10 +1,10 @@
 "use client";
 
 import { BeeIcon } from "@/components/ui/bee-icon";
+import { cn } from "@/lib/utils";
 import { Music } from "lucide-react";
 import { motion } from "motion/react";
 import useSWR from "swr";
-import { cn } from "@/lib/utils";
 
 export type HiveRoom = {
   id: string;
@@ -69,36 +69,36 @@ export default function HoneycombRoom({
         {/* Inner cell */}
         <div
           style={{ clipPath: HEX }}
-          className="w-full h-full bg-slate-950/95 backdrop-blur-xl"
+          className="w-full h-full backdrop-blur-xl"
         >
           <div className="h-full flex flex-col items-center justify-center text-center px-7 pt-7 pb-9 gap-1.5 sm:px-8 sm:gap-2">
             {/* Badge */}
-            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap">
+            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#fde68a] text-[#b45309] whitespace-nowrap">
               {room.badge}
             </span>
 
             {/* Live bees */}
-            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-slate-300 font-bold">
-              <BeeIcon size={13} className="text-amber-400" />
+            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-[#857558] font-bold">
+              <BeeIcon size={13} className="text-[#b45309]" />
               {room.singers} Bees
               <span className="size-1.5 rounded-full bg-red-400 animate-pulse" />
             </span>
 
             {/* Name */}
-            <h3 className="text-sm sm:text-base font-extrabold text-white leading-tight group-hover:text-amber-300">
+            <h3 className="text-sm sm:text-base font-extrabold text-[#3b2f21] leading-tight">
               {room.name}
             </h3>
-            <p className="text-[10px] sm:text-[11px] font-medium text-slate-400 -mt-1">
+            <p className="text-[10px] sm:text-[11px] font-medium text-[#857558] -mt-1">
               {room.genre}
             </p>
 
             {/* Now singing */}
-            <div className="w-full bg-slate-900/80 rounded-lg px-2.5 py-1.5 border border-amber-500/20 mt-1">
-              <div className="flex items-center justify-center gap-1 text-[8px] uppercase tracking-wider text-amber-400 font-bold mb-0.5">
+            <div className="w-full bg-white/70 rounded-lg px-2.5 py-1.5 border border-[#eadfc9] mt-1">
+              <div className="flex items-center justify-center gap-1 text-[8px] uppercase tracking-wider text-[#b45309] font-bold mb-0.5">
                 <Music className="w-2.5 h-2.5 animate-pulse" />
                 Now Singing
               </div>
-              <div className="text-[11px] sm:text-xs font-bold text-white truncate">
+              <div className="text-[11px] sm:text-xs font-bold text-[#3b2f21] truncate">
                 {nowSinging}
               </div>
             </div>

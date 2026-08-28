@@ -15,13 +15,13 @@ export default function NotFound() {
       glow={0.1}
       trail={0.05}
       speed={3}
-      className="min-h-dvh bg-slate-950"
+      className="min-h-dvh bg-[#f7f1e4]"
     >
       <div className="min-h-dvh flex flex-col items-center justify-center px-4 relative z-10">
         {/* Background glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute -top-40 -left-20 size-96 rounded-full bg-amber-500/10 blur-3xl" />
-          <div className="absolute -bottom-40 -right-20 size-96 rounded-full bg-amber-400/10 blur-3xl" />
+          <div className="absolute -top-40 -left-20 size-96 rounded-full bg-amber-300/40 blur-3xl" />
+          <div className="absolute -bottom-40 -right-20 size-96 rounded-full bg-amber-200/40 blur-3xl" />
         </div>
 
         <motion.div
@@ -52,12 +52,12 @@ export default function NotFound() {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl md:text-5xl font-black text-slate-100 mb-4">
+          <h1 className="text-3xl md:text-5xl font-black text-[#3b2f21] mb-4">
             Hive Not Found
           </h1>
 
           {/* Description */}
-          <p className="text-slate-400 text-lg mb-10 max-w-sm mx-auto leading-relaxed">
+          <p className="text-[#857558] text-lg mb-10 max-w-sm mx-auto leading-relaxed">
             This hive appears to be empty. The bees must have swarmed elsewhere.
             No karaoke stage exists at this path — but don&apos;t worry,
             we&apos;ll help you find your way back to the music.
@@ -76,7 +76,7 @@ export default function NotFound() {
             <Button
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 gap-2"
+              className="w-full sm:w-auto border-[#d97706]/40 text-[#b45309] hover:bg-[#fde68a] hover:border-[#d97706] gap-2"
               onClick={() => window.history.back()}
             >
               <Search className="size-5" />

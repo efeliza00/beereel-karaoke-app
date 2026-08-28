@@ -1,10 +1,11 @@
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Figtree } from "next/font/google";
+import { Figtree, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
-import { cn } from "@/lib/utils";
 
-const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,11 +65,26 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("dark h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+        "font-sans",
+        figtree.variable,
+      )}
     >
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>{children}<Toaster position="top-center" theme="dark" toastOptions={{
-        className: "!bg-slate-900 !text-slate-100 !rounded-2xl",
-      }} /></body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        {children}
+        <Toaster
+          position="top-center"
+          theme="light"
+          toastOptions={{
+            className: "!bg-[#fdfaf3] !text-[#3b2f21] !rounded-2xl !border !border-[#eadfc9]",
+          }}
+        />
+        <TooltipProvider></TooltipProvider>
+      </body>
     </html>
   );
 }

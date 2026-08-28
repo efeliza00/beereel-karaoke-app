@@ -24,20 +24,40 @@ import {
   STATS,
 } from "@/constants";
 import { useHivePresence, type ActiveHive } from "@/lib/use-hive-presence";
-import {
-  MicIcon,
-  PlayIcon,
-  RadioIcon,
-  SparklesIcon,
-  ZapIcon,
-} from "lucide-animated";
-import { Award, Hexagon, KeyRound, LogIn, Music, Plus } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { MicIcon, PlayIcon, RadioIcon, ZapIcon } from "lucide-animated";
+import { KeyRound, LogIn, Music, Plus } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import useSWR from "swr";
-import { Badge } from "../ui/badge";
+import { z } from "zod";
+
+const createHiveSchema = z.object({
+  stageName: z
+    .string()
+    .trim()
+    .min(1, "Enter a stage name")
+    .max(40, "Stage name must be 40 characters or less"),
+});
+
+const joinHiveSchema = z.object({
+  beeName: z
+    .string()
+    .trim()
+    .min(1, "Enter your bee name")
+    .max(40, "Bee name must be 40 characters or less"),
+  hexCode: z
+    .string()
+    .trim()
+    .regex(/^[A-Z]{2,3}-\d{4}$/i, "Enter a valid hive code like HEX-1234"),
+});
+
+type CreateHiveFormData = z.infer<typeof createHiveSchema>;
+type JoinHiveFormData = z.infer<typeof joinHiveSchema>;
 
 const LIVE_PALETTE = [
   {
@@ -96,16 +116,29 @@ function liveToHiveRoom(hive: ActiveHive, i: number): HiveRoom {
 
 export default function BeereelLanding() {
   const router = useRouter();
-  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
-  const [createUserName, setCreateUserName] = useState("");
-  const [joinUserName, setJoinUserName] = useState("");
-  const [joinHiveCode, setJoinHiveCode] = useState("");
   const [highlightedCard, setHighlightedCard] = useState<
     "create" | "join" | null
   >(null);
+  const [scrolled, setScrolled] = useState(false);
 
-  const joinInputRef = useRef<HTMLInputElement>(null);
-  const createInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const createForm = useForm<CreateHiveFormData>({
+    resolver: zodResolver(createHiveSchema),
+    defaultValues: { stageName: "" },
+  });
+  const create = createForm.register;
+
+  const joinForm = useForm<JoinHiveFormData>({
+    resolver: zodResolver(joinHiveSchema),
+    defaultValues: { beeName: "", hexCode: "" },
+  });
+  const join = joinForm.register;
 
   const { activeBees, liveHives, activeRooms } = useHivePresence(null);
   const { data: dbStats } = useSWR<{
@@ -128,22 +161,40 @@ export default function BeereelLanding() {
   const statNumbers: Record<string, number | null> = {
     "Active Bees": activeBees > 0 ? activeBees : null,
     "Live Honeycombs": liveHives > 0 ? liveHives : null,
-    "Songs in Cell":
-      typeof dbStats?.songsInCell === "number" ? dbStats.songsInCell : null,
     "Honey Gifts":
       typeof dbStats?.honeyGifts === "number" ? dbStats.honeyGifts : null,
     "Honeycombs Created":
       typeof dbStats?.totalHives === "number" ? dbStats.totalHives : null,
   };
 
+  const handleCreateHive = (data: CreateHiveFormData) => {
+    const host = data.stageName;
+    const roomId = `HEX-${Math.floor(1000 + Math.random() * 9000)}`;
+    sessionStorage.setItem(
+      `bee:${roomId}`,
+      JSON.stringify({ name: host, isHost: true }),
+    );
+    router.push(`/room/${roomId}`);
+  };
+
+  const handleJoinHive = (data: JoinHiveFormData) => {
+    const user = data.beeName;
+    const code = data.hexCode.trim().replace(/^#/, "").toUpperCase();
+    sessionStorage.setItem(
+      `bee:${code}`,
+      JSON.stringify({ name: user, isHost: false }),
+    );
+    router.push(`/room/${code}`);
+  };
+
   const handleNavigate = (targetId: string, option?: "create" | "join") => {
     if (option) {
       setHighlightedCard(option);
       setTimeout(() => {
-        if (option === "join" && joinInputRef.current) {
-          joinInputRef.current.focus();
-        } else if (option === "create" && createInputRef.current) {
-          createInputRef.current.focus();
+        if (option === "join") {
+          joinForm.setFocus("hexCode");
+        } else if (option === "create") {
+          createForm.setFocus("stageName");
         }
       }, 400);
       setTimeout(() => {
@@ -165,9 +216,9 @@ export default function BeereelLanding() {
       glow={0.1}
       trail={0.05}
       speed={3}
-      className="min-h-dvh bg-slate-950"
+      className="min-h-dvh "
     >
-      <div className="min-h-screen text-slate-100 selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden font-sans">
+      <div className="min-h-screen text-[#3b2f21] selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden font-sans">
         {/* Background Honeycomb Hex Pattern SVG */}
         <div className="absolute inset-0 opacity-15 pointer-events-none z-0">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -192,15 +243,17 @@ export default function BeereelLanding() {
           </svg>
         </div>
 
-        {/* Radial Honey Glow Gradients */}
+        {/* Radial Honey Glow Gradient */}
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-amber-500/25 via-yellow-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] bg-amber-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-20 -left-40 w-[500px] h-[500px] bg-yellow-500/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Top Navbar */}
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-amber-500/20">
+        <nav
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            scrolled ? "bg-[#f7f1e4]/80 backdrop-blur-lg" : "bg-transparent"
+          }`}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
+            <div className="flex items-center justify-between h-20">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <Image
                   src={`/logo/favicon-96x96.png`}
@@ -222,7 +275,7 @@ export default function BeereelLanding() {
                   <a
                     key={link.label}
                     href={link.href}
-                    className="text-sm font-medium text-slate-300 hover:text-amber-400 transition-colors"
+                    className="text-sm font-medium text-[#857558] hover:text-amber-400 transition-colors"
                   >
                     {link.label}
                   </a>
@@ -233,9 +286,9 @@ export default function BeereelLanding() {
                 <Button
                   onClick={() => handleNavigate("create-or-join", "join")}
                   size="sm"
-                  className="h-9 px-3 sm:h-10 sm:px-4 text-xs sm:text-sm gap-1.5 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-bold hover:from-amber-300 hover:to-amber-500 shadow-lg shadow-amber-500/25 border border-amber-300/50 cursor-pointer"
+                  className="h-9 px-3 sm:h-10 sm:px-4 text-xs sm:text-sm gap-1.5  text-white font-thin  transition-all duration-300 active:text-[#451a03] active:shadow-neumorph-pressed active:bg-[#f7f1e4] border-0 cursor-pointer"
                 >
-                  <PlayIcon size={16} animateOnHover />
+                  <PlayIcon size={12} animateOnHover />
                   <span className="hidden min-[400px]:inline whitespace-nowrap">
                     Enter Honeycomb
                   </span>
@@ -254,24 +307,25 @@ export default function BeereelLanding() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            className="flex items-center mb-10 justify-center"
           >
-            <Badge
-              variant="outline"
-              className="mb-6 px-4 py-1.5 border-amber-500/40 bg-amber-500/10 text-amber-300 inline-flex items-center gap-2 text-sm font-semibold shadow-inner shadow-amber-500/20"
-            >
-              <SparklesIcon size={16} animateOnHover />
-              Next-Gen Honeycomb Karaoke Experience
-            </Badge>
+            <iframe
+              src="https://appbuildersph.com/embed/apps/beereel"
+              title="Beereel votes on App Builders PH"
+              width="280"
+              height="72"
+              loading="lazy"
+            ></iframe>
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-black text-slate-100 tracking-tight leading-none mb-6"
+            className="text-6xl md:text-8xl lg:text-9xl font-medium text-[#3b2f21] tracking-tight leading-none mb-6"
           >
             Join the Karaoke <br />
-            <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(245,158,11,0.35)]">
+            <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent">
               Hive
             </span>
           </motion.h1>
@@ -280,26 +334,12 @@ export default function BeereelLanding() {
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed"
+            className="text-lg md:text-xl text-[#857558] max-w-2xl mx-auto mb-10 leading-relaxed"
           >
             Turn any moment into a live karaoke party. Create a private hive,
             share the code, and your friends join instantly — no installs, no
             accounts, just pure harmony.
           </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
-          >
-            <iframe
-              src="https://appbuildersph.com/embed/apps/beereel"
-              title="Beereel votes on App Builders PH"
-              width="320"
-              height="96"
-              loading="lazy"
-            ></iframe>
-          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 25 }}
@@ -310,53 +350,46 @@ export default function BeereelLanding() {
             <Button
               size="lg"
               onClick={() => handleNavigate("create-or-join", "create")}
-              className="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 font-extrabold text-base px-8 py-6 shadow-xl shadow-amber-500/30 hover:scale-105 transition-transform border border-amber-300 gap-2 cursor-pointer"
+              className="bg-[#f7f1e4] text-white font-thin text-lg sm:text-xl px-10 sm:px-12 py-7 sm:py-8 shadow-neumorph-sm transition-all duration-300 bg-[#f59e0b] hover:text-[#451a03] active:shadow-neumorph-pressed border-0 gap-3 cursor-pointer"
             >
-              <MicIcon size={20} animateOnHover />
+              <MicIcon size={24} animateOnHover />
               Start Singing Now
             </Button>
             <Button
               size="lg"
-              variant="outline"
+              variant="ghost"
               onClick={() => handleNavigate("features")}
-              className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 text-base px-8 py-6 gap-2 cursor-pointer"
+              className="bg-[#f7f1e4] text-[#b45309] text-lg sm:text-xl px-10 sm:px-12 py-7 sm:py-8  transition-all duration-300  hover:text-[#451a03] hover:shadow-neumorph-sm active:shadow-neumorph-pressed gap-3 cursor-pointer"
             >
-              <RadioIcon size={20} animateOnHover />
+              <RadioIcon size={24} animateOnHover />
               Browse Live Honeycombs
             </Button>
           </motion.div>
+        </section>
 
-          {/* Polished Honeycomb Visual Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 max-w-5xl mx-auto">
+        {/* Live Stats Section */}
+        <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto relative z-10">
+          <div className="grid grid-cols-2 gap-5 max-w-2xl mx-auto">
             {STATS.map((st, i) => (
               <motion.div
                 key={st.label}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.1 }}
-                className="bg-slate-900/80 border border-amber-500/30 hover:border-amber-400/70 rounded-2xl p-5 backdrop-blur-xl relative overflow-hidden group shadow-lg shadow-amber-500/5 hover:shadow-amber-500/20 transition-all duration-300"
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08 }}
+                className="aspect-square rounded-[50px] shadow-neumorph-inset-sm  flex flex-col items-center justify-center gap-1.5 px-4"
               >
-                <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/25 transition-colors" />
-                <div className="flex items-center justify-between mb-2">
-                  {typeof statNumbers[st.label] === "number" ? (
-                    <NumberTicker
-                      value={statNumbers[st.label] as number}
-                      className="text-2xl md:text-3xl font-black text-white"
-                    />
-                  ) : (
-                    <span className="text-2xl md:text-3xl font-black text-white">
-                      —
-                    </span>
-                  )}
-                  {st.icon && (
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform shrink-0">
-                      <st.icon size={16} className="w-4 h-4" />
-                    </div>
-                  )}
-                </div>
-                <div className="text-xs uppercase font-bold tracking-wider text-slate-300 text-left">
-                  {st.label}
-                </div>
+                {typeof statNumbers[st.label] === "number" ? (
+                  <NumberTicker
+                    value={statNumbers[st.label] as number}
+                    label={st.label}
+                    className="text-3xl md:text-4xl font-light text-[#3b2f21]"
+                  />
+                ) : (
+                  <span className="text-3xl md:text-4xl font-light text-[#3b2f21]">
+                    —
+                  </span>
+                )}
               </motion.div>
             ))}
           </div>
@@ -371,27 +404,17 @@ export default function BeereelLanding() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <Badge
-              variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-300 mb-3 px-3 py-1 gap-1.5"
-            >
-              <Award size={14} />
-              Leaderboard
-            </Badge>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-100 mb-4">
-              Most Sang{" "}
-              <span className="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
-                Songs
-              </span>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-[#3b2f21] mb-4">
+              Most Sang <span className="text-[#b45309]">Songs</span>
             </h2>
-            <p className="text-slate-400 max-w-xl mx-auto text-sm md:text-base">
+            <p className="text-[#857558] max-w-xl mx-auto text-sm md:text-base">
               Top 5 tracks performed across all honeycombs.
             </p>
           </motion.div>
 
-          <div className="bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-amber-500/20 shadow-2xl shadow-amber-500/10 overflow-hidden">
+          <div className="rounded-4xl overflow-hidden p-1.5">
             {dbStats?.trendingSongs && dbStats.trendingSongs.length > 0 ? (
-              <div className="divide-y divide-amber-500/10">
+              <div className="divide-y divide-[#f0e8d6]">
                 {dbStats.trendingSongs.map((song, i) => (
                   <motion.div
                     key={song.videoId}
@@ -399,47 +422,49 @@ export default function BeereelLanding() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.03 }}
-                    className="flex items-center gap-4 px-6 py-4 hover:bg-amber-500/5 transition-colors group"
+                    className="flex items-center gap-4 px-6 py-4 transition-colors group"
                   >
                     <div className="w-8 shrink-0 text-center">
                       {i < 3 ? (
                         <span
-                          className={`inline-flex items-center justify-center size-8 rounded-full text-xs font-black ${
+                          className={`inline-flex items-center justify-center size-8 rounded-full text-lg font-bold ${
                             i === 0
-                              ? "bg-amber-400/20 text-amber-300 ring-1 ring-amber-400/40"
+                              ? "bg-[#fde68a] text-[#b45309]"
                               : i === 1
-                                ? "bg-slate-400/15 text-slate-300 ring-1 ring-slate-400/30"
-                                : "bg-amber-700/20 text-amber-500 ring-1 ring-amber-700/30"
+                                ? "bg-white text-[#857558]"
+                                : "bg-[#f1e9d6] text-[#b45309]"
                           }`}
                         >
                           {i + 1}
                         </span>
                       ) : (
-                        <span className="text-slate-500 font-bold text-sm">
+                        <span className="text-[#a39478] font-bold text-sm">
                           {i + 1}
                         </span>
                       )}
                     </div>
 
                     {song.thumbnail ? (
-                      <img
+                      <Image
                         src={song.thumbnail}
-                        alt=""
-                        className="size-10 rounded-lg object-cover bg-slate-800 shrink-0"
+                        alt={song.title + "-"}
+                        width={10}
+                        height={10}
+                        className="size-10 rounded-lg object-cover bg-[#eadfc9] shrink-0"
                       />
                     ) : (
-                      <div className="size-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                        <PlayIcon size={16} className="text-amber-400" />
+                      <div className="size-10 rounded-lg bg-[#f1e9d6] flex items-center justify-center shrink-0">
+                        <PlayIcon size={16} className="text-[#b45309]" />
                       </div>
                     )}
 
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-slate-200 truncate group-hover:text-amber-300 transition-colors">
+                      <p className="text-sm font-bold text-[#3b2f21] truncate transition-colors">
                         {song.title}
                       </p>
                     </div>
 
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 font-bold text-xs shrink-0">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fde68a] text-[#b45309] font-bold text-xs shrink-0">
                       <PlayIcon size={12} />
                       {song.count}
                     </span>
@@ -447,7 +472,7 @@ export default function BeereelLanding() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+              <div className="flex flex-col items-center justify-center py-16 text-[#a39478]">
                 <Music size={32} className="mb-3 opacity-40" />
                 <p className="italic text-sm">
                   No songs performed yet. Start a hive and be the first!
@@ -463,20 +488,11 @@ export default function BeereelLanding() {
           className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10"
         >
           <div className="text-center mb-14">
-            <Badge
-              variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-300 mb-3 px-3 py-1 gap-1.5"
-            >
-              <RadioIcon size={14} animateOnHover />
-              Live Honeycomb Cells
-            </Badge>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-100">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-[#3b2f21]">
               Explore Active{" "}
-              <span className="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">
-                Singing Honeycombs
-              </span>
+              <span className="text-[#b45309]">Singing Honeycombs</span>
             </h2>
-            <p className="text-slate-400 max-w-xl mx-auto mt-3 text-sm md:text-base">
+            <p className="text-[#857558] max-w-xl mx-auto mt-3 text-sm md:text-base">
               Pick a room, step up to the hexagonal stage, and start performing
               live.
             </p>
@@ -503,20 +519,11 @@ export default function BeereelLanding() {
           className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10"
         >
           <div className="text-center mb-14">
-            <Badge
-              variant="outline"
-              className="border-amber-500/40 bg-amber-500/10 text-amber-300 mb-3 px-3 py-1 gap-1.5"
-            >
-              <SparklesIcon size={14} animateOnHover />
-              Instant Hive Access
-            </Badge>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-100">
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-[#3b2f21]">
               Create or Join a{" "}
-              <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent">
-                Honeycomb Stage
-              </span>
+              <span className="text-[#b45309]">Honeycomb Stage</span>
             </h2>
-            <p className="text-slate-400 max-w-xl mx-auto mt-3 text-sm md:text-base">
+            <p className="text-[#857558] max-w-xl mx-auto mt-3 text-sm md:text-base">
               Start your own custom honeycomb room or enter a room code to drop
               right into the live choir.
             </p>
@@ -525,162 +532,166 @@ export default function BeereelLanding() {
           <div className="flex flex-col md:flex-row items-stretch justify-center gap-6 max-w-6xl mx-auto">
             {/* Option 1: Create Hive */}
             <motion.div
-              whileHover={{ y: -4 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className={`flex-1 bg-slate-900/80 border rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between transition-all duration-500 ${
+              className={`flex-1 bg-[#fdfaf3] p-8 relative overflow-hidden flex flex-col justify-between transition-all duration-500 ${
                 highlightedCard === "create"
-                  ? "border-amber-400 ring-4 ring-amber-400/50 shadow-2xl shadow-amber-500/40 scale-[1.02]"
-                  : "border-amber-500/30 hover:border-amber-400/70 shadow-xl shadow-amber-500/5"
+                  ? "ring-2 ring-[#f59e0b]  rounded-3xl"
+                  : " rounded-3xl "
               }`}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30 shrink-0 text-slate-950 font-black">
-                    <Plus className="w-6 h-6 stroke-[3]" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-extrabold text-slate-100">
-                      Create New Honeycomb
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Host a room and invite your squad
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-6 text-left">
-                  <div>
-                    <Label
-                      htmlFor="create-username"
-                      className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider"
-                    >
-                      Your Stage Name (Host)
-                    </Label>
-                    <Input
-                      id="create-username"
-                      ref={createInputRef}
-                      type="text"
-                      placeholder="e.g. QueenBee_99"
-                      value={createUserName}
-                      onChange={(e) => setCreateUserName(e.target.value)}
-                      className="w-full bg-slate-950/80 border-amber-500/20 focus-visible:ring-amber-400 text-slate-100 placeholder:text-slate-500 rounded-xl"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                onClick={() => {
-                  const host = createUserName.trim() || "QueenBee_99";
-                  const roomId = `HEX-${Math.floor(1000 + Math.random() * 9000)}`;
-
-                  sessionStorage.setItem(
-                    `bee:${roomId}`,
-                    JSON.stringify({ name: host, isHost: true }),
-                  );
-                  router.push(`/room/${roomId}`);
-                }}
-                className="w-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 font-black text-sm py-6 shadow-lg shadow-amber-500/20 hover:scale-[1.02] transition-transform border border-amber-300 gap-2"
+              <form
+                onSubmit={createForm.handleSubmit(handleCreateHive)}
+                className="flex flex-col h-full"
               >
-                <MicIcon size={18} animateOnHover />
-                Create Honeycomb
-              </Button>
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-[#fde68a] text-[#b45309] flex items-center justify-center shrink-0">
+                      <Plus className="w-6 h-6 stroke-[3]" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-extrabold text-[#3b2f21]">
+                        Create New Honeycomb
+                      </h3>
+                      <p className="text-xs text-[#857558]">
+                        Host a room and invite your squad
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-6 text-left">
+                    <div>
+                      <Label
+                        htmlFor="create-username"
+                        className="block text-xs font-bold text-[#857558] mb-2 uppercase tracking-wider"
+                      >
+                        Your Stage Name (Host)
+                      </Label>
+                      <Input
+                        id="create-username"
+                        type="text"
+                        placeholder="e.g. QueenBee_99"
+                        aria-invalid={!!createForm.formState.errors.stageName}
+                        {...create("stageName")}
+                        className="w-full rounded-xl bg-white border border-[#eadfc9] shadow-none text-[#3b2f21] placeholder:text-[#a39478] focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:border-[#f59e0b]"
+                      />
+                      {createForm.formState.errors.stageName && (
+                        <p className="mt-1.5 text-[11px] font-medium text-red-400">
+                          {createForm.formState.errors.stageName.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full mt-auto  text-white font-bold text-sm py-6 rounded-xl transition-all duration-300 hover:text-[#b45309] border-0 gap-2"
+                >
+                  <MicIcon size={18} animateOnHover />
+                  Create Honeycomb
+                </Button>
+              </form>
             </motion.div>
 
             {/* Separator Line with OR */}
-            <div className="flex md:flex-col items-center justify-center gap-3 my-4 md:my-0 shrink-0">
-              <div className="h-px w-full md:w-px md:h-full min-h-[40px] bg-gradient-to-r md:bg-gradient-to-b from-transparent via-amber-500/40 to-transparent" />
+            <div className="hidden md:flex items-center justify-center gap-3 shrink-0 flex-col">
+              <div className="h-px w-full max-w-[140px] mx-auto md:mx-0 md:w-px md:h-full min-h-[40px] md:max-w-none bg-gradient-to-r md:bg-gradient-to-b from-transparent via-amber-500/40 to-transparent" />
               <span className="text-amber-400 text-xs font-black tracking-widest uppercase shrink-0">
                 OR
               </span>
-              <div className="h-px w-full md:w-px md:h-full min-h-[40px] bg-gradient-to-r md:bg-gradient-to-b from-transparent via-amber-500/40 to-transparent" />
+              <div className="h-px w-full max-w-[140px] mx-auto md:mx-0 md:w-px md:h-full min-h-[40px] md:max-w-none bg-gradient-to-r md:bg-gradient-to-b from-transparent via-amber-500/40 to-transparent" />
             </div>
 
             {/* Option 2: Join Hive */}
             <motion.div
-              whileHover={{ y: -4 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className={`flex-1 bg-slate-900/80 border rounded-3xl p-8 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between transition-all duration-500 ${
+              className={`flex-1 bg-[#fdfaf3] p-8 relative overflow-hidden  flex flex-col justify-between transition-all duration-500 ${
                 highlightedCard === "join"
-                  ? "border-amber-400 ring-4 ring-amber-400/50 shadow-2xl shadow-amber-500/40 scale-[1.02]"
-                  : "border-amber-500/30 hover:border-amber-400/70 shadow-xl shadow-amber-500/5"
+                  ? "ring-2 ring-[#f59e0b] rounded-3xl"
+                  : " rounded-3xl "
               }`}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-2xl pointer-events-none" />
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/30 shrink-0 text-slate-950 font-black">
-                    <KeyRound className="w-6 h-6 stroke-[2.5]" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-extrabold text-slate-100">
-                      Join with Room Code
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Enter a 6-character hex code
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-6 text-left">
-                  <div>
-                    <Label
-                      htmlFor="join-username"
-                      className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider"
-                    >
-                      Your Bee Name (Singer)
-                    </Label>
-                    <Input
-                      id="join-username"
-                      type="text"
-                      placeholder="e.g. HoneyVocalist"
-                      value={joinUserName}
-                      onChange={(e) => setJoinUserName(e.target.value)}
-                      className="w-full bg-slate-950/80 border-amber-500/20 focus-visible:ring-amber-400 text-slate-100 placeholder:text-slate-500 rounded-xl"
-                    />
-                  </div>
-
-                  <div>
-                    <Label
-                      htmlFor="join-code"
-                      className="block text-xs font-bold text-slate-300 mb-2 uppercase tracking-wider"
-                    >
-                      Hive Hex Code
-                    </Label>
-                    <Input
-                      id="join-code"
-                      ref={joinInputRef}
-                      type="text"
-                      placeholder="e.g. #HEX-8492"
-                      value={joinHiveCode}
-                      onChange={(e) =>
-                        setJoinHiveCode(e.target.value.toUpperCase())
-                      }
-                      className="w-full bg-slate-950/80 border-amber-500/20 focus-visible:ring-amber-400 text-slate-100 placeholder:text-slate-500 rounded-xl font-mono tracking-wider uppercase"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button
-                onClick={() => {
-                  const user = joinUserName.trim() || "HoneyVocalist";
-                  const code =
-                    joinHiveCode.trim().replace(/^#/, "").toUpperCase() ||
-                    "HEX-4231";
-                  sessionStorage.setItem(
-                    `bee:${code}`,
-                    JSON.stringify({ name: user, isHost: false }),
-                  );
-                  router.push(`/room/${code}`);
-                }}
-                variant="outline"
-                className="w-full border-amber-500/40 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 font-bold text-sm py-6 gap-2"
+              <form
+                onSubmit={joinForm.handleSubmit(handleJoinHive)}
+                className="flex flex-col h-full"
               >
-                <LogIn className="w-5 h-5" />
-                Enter Code
-              </Button>
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-[#fde68a] text-[#b45309] flex items-center justify-center shrink-0">
+                      <KeyRound className="w-6 h-6 stroke-[2.5]" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-extrabold text-[#3b2f21]">
+                        Join with Room Code
+                      </h3>
+                      <p className="text-xs text-[#857558]">
+                        Enter a 6-character hex code
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-6 text-left">
+                    <div>
+                      <Label
+                        htmlFor="join-username"
+                        className="block text-xs font-bold text-[#857558] mb-2 uppercase tracking-wider"
+                      >
+                        Your Bee Name (Singer)
+                      </Label>
+                      <Input
+                        id="join-username"
+                        type="text"
+                        placeholder="e.g. HoneyVocalist"
+                        aria-invalid={!!joinForm.formState.errors.beeName}
+                        {...join("beeName")}
+                        className="w-full rounded-xl bg-white border border-[#eadfc9] shadow-none text-[#3b2f21] placeholder:text-[#a39478] focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:border-[#f59e0b]"
+                      />
+                      {joinForm.formState.errors.beeName && (
+                        <p className="mt-1.5 text-[11px] font-medium text-red-400">
+                          {joinForm.formState.errors.beeName.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label
+                        htmlFor="join-code"
+                        className="block text-xs font-bold text-[#857558] mb-2 uppercase tracking-wider"
+                      >
+                        Hive Hex Code
+                      </Label>
+                      <Input
+                        id="join-code"
+                        type="text"
+                        placeholder="e.g. #HEX-8492"
+                        aria-invalid={!!joinForm.formState.errors.hexCode}
+                        {...join("hexCode")}
+                        onBlur={(e) => {
+                          const val = e.target.value.toUpperCase();
+                          joinForm.setValue("hexCode", val, {
+                            shouldValidate: true,
+                          });
+                        }}
+                        className="w-full rounded-xl bg-white border border-[#eadfc9] shadow-none text-[#3b2f21] placeholder:text-[#a39478] focus-visible:ring-2 focus-visible:ring-[#f59e0b] focus-visible:border-[#f59e0b] font-mono tracking-wider uppercase"
+                      />
+                      {joinForm.formState.errors.hexCode && (
+                        <p className="mt-1.5 text-[11px] font-medium text-red-400">
+                          {joinForm.formState.errors.hexCode.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="w-full mt-auto bg-white border border-[#eadfc9] text-[#3b2f21] font-bold text-sm py-6 rounded-xl hover:border-[#b45309] hover:text-[#b45309] gap-2"
+                >
+                  <LogIn className="w-5 h-5" />
+                  Enter Code
+                </Button>
+              </form>
             </motion.div>
           </div>
         </section>
@@ -690,22 +701,10 @@ export default function BeereelLanding() {
           id="how-it-works"
           className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10"
         >
-          <div className="bg-gradient-to-br from-slate-900/90 via-slate-950 to-slate-900/90 border border-amber-500/30 rounded-3xl p-8 md:p-14 shadow-2xl shadow-amber-500/10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
+          <div className="rounded-3xl p-8 md:p-12 ">
             <div className="text-center mb-14">
-              <Badge
-                variant="outline"
-                className="border-amber-500/40 bg-amber-500/10 text-amber-300 mb-3 px-3 py-1"
-              >
-                <Hexagon className="w-3.5 h-3.5 fill-amber-400 text-amber-950" />
-                Beehive Workflow
-              </Badge>
-              <h2 className="text-3xl md:text-5xl font-black text-slate-100">
-                How the{" "}
-                <span className="bg-gradient-to-r from-yellow-300 to-amber-500 bg-clip-text text-transparent">
-                  Hive Operates
-                </span>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-[#3b2f21]">
+                How the <span className="text-[#b45309]">Hive Operates</span>
               </h2>
             </div>
 
@@ -713,32 +712,21 @@ export default function BeereelLanding() {
               {BEEHIVE_FEATURES.map((feat) => (
                 <div
                   key={feat.title}
-                  className="bg-slate-950/80 border border-amber-500/25 rounded-2xl p-7 relative group hover:border-amber-400/60 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300 flex flex-col justify-between"
+                  className="rounded-3xl bg-[#fdfaf3] p-7 relative group hover:shadow-neumorph-sm transition-shadow duration-500 ease-in-out flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-6">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform shrink-0">
-                        <feat.icon
-                          size={28}
-                          className="w-7 h-7 text-slate-950 stroke-[2.5]"
-                        />
+                      <div className="w-12 h-12 rounded-xl bg-[#fde68a] text-[#b45309] flex items-center justify-center">
+                        <feat.icon size={28} className="w-7 h-7 stroke-[2.5]" />
                       </div>
-                      <span className="text-2xl font-black text-amber-400/30 group-hover:text-amber-400/60 transition-colors">
-                        {feat.step}
-                      </span>
                     </div>
 
-                    <h3 className="text-xl font-extrabold text-slate-100 mb-3 group-hover:text-amber-300 transition-colors">
+                    <h3 className="text-xl font-bold text-[#3b2f21] mb-3">
                       {feat.title}
                     </h3>
-                    <p className="text-sm text-slate-400 leading-relaxed font-normal">
+                    <p className="text-sm text-[#857558] leading-relaxed font-normal">
                       {feat.desc}
                     </p>
-                  </div>
-
-                  <div className="mt-6 pt-4 border-t border-amber-500/15 flex items-center gap-2 text-xs font-bold text-amber-400">
-                    <SparklesIcon size={14} animateOnHover />
-                    <span>Beehive Feature</span>
                   </div>
                 </div>
               ))}
@@ -748,21 +736,18 @@ export default function BeereelLanding() {
 
         {/* CTA Section */}
         <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto text-center relative z-10">
-          <div className="bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-600/20 border border-amber-500/40 rounded-3xl p-10 backdrop-blur-xl relative overflow-hidden shadow-2xl shadow-amber-500/15">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center mx-auto mb-6 shadow-inner">
-              <Award className="w-8 h-8 text-amber-400" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-black text-slate-100 mb-3">
+          <div className="rounded-3xl bg-[#fdfaf3] p-10 relative overflow-hidden shadow-neumorph">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#3b2f21] mb-3">
               Ready to Rule the Beehive Stage?
             </h2>
-            <p className="text-slate-300 max-w-xl mx-auto mb-8 text-sm md:text-base">
+            <p className="text-[#857558] max-w-xl mx-auto mb-8 text-sm md:text-base">
               Create your custom hexagon karaoke room in seconds. Invite friends
               and share the sweet sound.
             </p>
             <a href="#create-or-join">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 font-black text-base px-8 py-6 shadow-xl shadow-amber-500/30 hover:scale-105 transition-transform border border-amber-300/50 gap-2"
+                className="bg-[#b45309] text-white font-bold text-base px-8 py-6 rounded-xl border-0 hover:bg-[#78350f] gap-2"
               >
                 <ZapIcon size={20} animateOnHover />
                 Launch My Hive Room
@@ -772,7 +757,7 @@ export default function BeereelLanding() {
         </section>
 
         {/* Footer */}
-        <footer className="py-12 border-t border-amber-500/20 text-center text-xs text-slate-500 relative z-10 flex flex-col items-center gap-4">
+        <footer className="py-12 border-t border-[#e4d8bd] text-center text-xs text-[#a39478] relative z-10 flex flex-col items-center gap-4">
           <div className="flex items-center gap-6 mb-2">
             <Dialog>
               <DialogTrigger
@@ -782,12 +767,12 @@ export default function BeereelLanding() {
               >
                 Terms of Service
               </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-slate-900 border-amber-500/20 text-slate-200 rounded-3xl overflow-hidden">
+              <DialogContent className="max-w-2xl bg-[#fdfaf3] border-[#e4d8bd] text-[#3b2f21] rounded-3xl overflow-hidden">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-black text-amber-400">
                     Terms of Service
                   </DialogTitle>
-                  <DialogDescription className="text-slate-400">
+                  <DialogDescription className="text-[#857558]">
                     Last updated: {new Date().toLocaleDateString()}
                   </DialogDescription>
                 </DialogHeader>
@@ -860,12 +845,12 @@ export default function BeereelLanding() {
               >
                 Privacy Policy
               </DialogTrigger>
-              <DialogContent className="max-w-xl bg-slate-900 border-amber-500/20 text-slate-200 rounded-3xl">
+              <DialogContent className="max-w-xl bg-[#fdfaf3] border-[#e4d8bd] text-[#3b2f21] rounded-3xl">
                 <DialogHeader>
                   <DialogTitle className="text-2xl font-black text-amber-400">
                     Privacy Policy
                   </DialogTitle>
-                  <DialogDescription className="text-slate-400">
+                  <DialogDescription className="text-[#857558]">
                     How we handle your bee data.
                   </DialogDescription>
                 </DialogHeader>
@@ -886,6 +871,13 @@ export default function BeereelLanding() {
                 </div>
               </DialogContent>
             </Dialog>
+
+            <Link
+              href="/changelog"
+              className="hover:text-amber-400 transition-colors"
+            >
+              Changelog
+            </Link>
           </div>
           <p className="opacity-60">
             &copy; {new Date().getFullYear()} {SITE_CONFIG.name}. All rights
