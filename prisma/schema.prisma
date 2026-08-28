@@ -26,3 +26,17 @@ model Gift {
   message   String?
   createdAt DateTime @default(now())
 }
+
+model ChangelogEntry {
+  id          String   @id @default(uuid()) // Upgraded to uuid() to prevent deprecation warnings
+  version     String
+  date        DateTime @default(now())
+  title       String
+  description String?
+  type        String   // e.g., "feature", "fix", "improvement"
+  
+  // FIX: This correctly tells PostgreSQL to instantiate a valid, empty JSON array structure
+  listItems   Json     @default(dbgenerated("'[]'::jsonb")) 
+  
+  createdAt   DateTime @default(now())
+}
