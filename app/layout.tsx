@@ -12,6 +12,8 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -25,6 +27,9 @@ export const metadata: Metadata = {
   description:
     "Create a hive, invite your friends, and karaoke together in real time. Live honeycomb rooms, synced playback, and instant reactions — no stage needed.",
   applicationName: "Beereel",
+  alternates: {
+    canonical: BASE_URL,
+  },
   keywords: [
     "karaoke",
     "sing together",
@@ -51,6 +56,14 @@ export const metadata: Metadata = {
       "Create a hive, invite your friends, and karaoke together in real time. Live honeycomb rooms, synced playback, and instant reactions.",
     siteName: "Beereel",
     type: "website",
+    images: [
+      {
+        url: `${BASE_URL}/og-image.png`, // Put your preview image file in the /public folder
+        width: 1200,
+        height: 630,
+        alt: "Beereel Karaoke Stage Preview",
+      },
+    ],
   },
   twitter: {
     card: "summary",
@@ -80,7 +93,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           position="top-center"
           theme="light"
           toastOptions={{
-            className: "!bg-[#fdfaf3] !text-[#3b2f21] !rounded-2xl !border !border-[#eadfc9]",
+            className:
+              "!bg-[#fdfaf3] !text-[#3b2f21] !rounded-2xl !border !border-[#eadfc9]",
           }}
         />
         <TooltipProvider></TooltipProvider>
