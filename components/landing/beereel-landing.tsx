@@ -260,7 +260,7 @@ export default function BeereelLanding() {
                   alt="Beereel Logo"
                   width={40}
                   height={40}
-                  quality={100}
+                  quality={75}
                   className="rounded-xl"
                 />
                 <div className="truncate">

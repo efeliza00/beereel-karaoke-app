@@ -83,7 +83,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                     alt="Beereel Logo"
                     width={36}
                     height={36}
-                    quality={100}
+                    quality={75}
                     className="size-9 rounded-xl"
                   />
                   <div className="flex flex-col gap-0.5 leading-none">

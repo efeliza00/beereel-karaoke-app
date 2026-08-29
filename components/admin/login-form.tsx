@@ -67,7 +67,7 @@ export function LoginForm() {
               alt="Beereel Logo"
               width={56}
               height={56}
-              quality={100}
+              quality={75}
               className="rounded-2xl"
             />
             <span className="bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-xl font-extrabold tracking-tight text-transparent">

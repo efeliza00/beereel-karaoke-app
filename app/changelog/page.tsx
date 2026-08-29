@@ -80,7 +80,7 @@ export default async function ChangelogPage() {
                 alt="Beereel Logo"
                 width={40}
                 height={40}
-                quality={100}
+                quality={75}
                 className="rounded-xl"
               />
               <span className="bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-lg font-extrabold tracking-tight text-transparent sm:text-xl">
