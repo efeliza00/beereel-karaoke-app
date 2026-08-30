@@ -12,7 +12,8 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://beereel.vercel.app";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -20,6 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: {
     default: "Beereel — Sing Together, Anywhere",
     template: "%s · Beereel",
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
     "Create a hive, invite your friends, and karaoke together in real time. Live honeycomb rooms, synced playback, and instant reactions — no stage needed.",
   applicationName: "Beereel",
   alternates: {
-    canonical: BASE_URL,
+    canonical: "/",
   },
   keywords: [
     "karaoke",
