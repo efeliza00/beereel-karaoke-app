@@ -1,7 +1,9 @@
 import { ArrowLeft, CalendarDays, Music } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { SiteFooter } from "@/components/landing/site-footer";
 import {
   Timeline,
   TimelineContent,
@@ -9,7 +11,6 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@/components/reui/timeline";
-import { SiteFooter } from "@/components/landing/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { getPublishedChangelog } from "@/lib/changelog";
 import {
@@ -20,6 +21,48 @@ import {
 } from "@/lib/changelog-meta";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const entries = await getPublishedChangelog();
+  const latestEntry = entries[0];
+
+  return {
+    title: "Changelog - Beereel",
+    description:
+      "What's new in Beereel - latest updates, features, and bug fixes",
+    openGraph: {
+      title: "Changelog - Beereel",
+      description:
+        "What's new in Beereel - latest updates, features, and bug fixes",
+      type: "website",
+      siteName: "Beereel",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: "Beereel Changelog",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Changelog - Beereel",
+      description:
+        "What's new in Beereel - latest updates, features, and bug fixes",
+      images: ["/og-image.png"],
+    },
+    alternates: {
+      canonical: "/changelog",
+    },
+    other: {
+      "article:published_time":
+        latestEntry?.publishedAt?.toISOString() ?? new Date().toISOString(),
+      "article:modified_time":
+        latestEntry?.publishedAt?.toISOString() ?? new Date().toISOString(),
+    },
+  };
+}
 
 function formatMonthYear(date: Date | string) {
   return new Date(date).toLocaleDateString(undefined, {
