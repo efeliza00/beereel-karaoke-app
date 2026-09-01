@@ -379,17 +379,11 @@ export default function BeereelLanding() {
                 transition={{ delay: i * 0.08 }}
                 className="aspect-square rounded-[50px] shadow-neumorph-inset-sm  flex flex-col items-center justify-center gap-1.5 px-4"
               >
-                {typeof statNumbers[st.label] === "number" ? (
-                  <NumberTicker
-                    value={statNumbers[st.label] as number}
-                    label={st.label}
-                    className="text-3xl md:text-4xl font-light text-[#3b2f21]"
-                  />
-                ) : (
-                  <span className="text-3xl md:text-4xl font-light text-[#3b2f21]">
-                    —
-                  </span>
-                )}
+                <NumberTicker
+                  value={statNumbers[st.label] as number}
+                  label={st.label}
+                  className="text-3xl md:text-4xl font-light text-[#3b2f21]"
+                />
               </motion.div>
             ))}
           </div>
