@@ -45,35 +45,34 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="relative flex min-h-svh w-full bg-background">
-        {/* Background Honeycomb Hex Pattern SVG */}
-        <div className="absolute inset-0 opacity-[0.08] pointer-events-none z-0">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern
-                id="admin-hexagons"
-                width="56"
-                height="100"
-                patternUnits="userSpaceOnUse"
-                patternTransform="scale(1)"
-              >
-                <path
-                  d="M28 66L0 50L0 16L28 0L56 16L56 50L28 66Z M28 100L0 84L0 50L28 66L56 50L56 84L28 100Z"
-                  fill="none"
-                  stroke="#b45309"
-                  strokeWidth="1"
-                  strokeOpacity="0.35"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#admin-hexagons)" />
-          </svg>
-        </div>
+      {/* Background Honeycomb Hex Pattern SVG */}
+      <div className="absolute inset-0 opacity-[0.08] pointer-events-none z-0">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern
+              id="admin-hexagons"
+              width="56"
+              height="100"
+              patternUnits="userSpaceOnUse"
+              patternTransform="scale(1)"
+            >
+              <path
+                d="M28 66L0 50L0 16L28 0L56 16L56 50L28 66Z M28 100L0 84L0 50L28 66L56 50L56 84L28 100Z"
+                fill="none"
+                stroke="#b45309"
+                strokeWidth="1"
+                strokeOpacity="0.35"
+              />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#admin-hexagons)" />
+        </svg>
+      </div>
 
-        {/* Radial Honey Glow Gradient */}
-        <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.16),transparent_65%)]" />
+      {/* Radial Honey Glow Gradient */}
+      <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,rgba(245,158,11,0.16),transparent_65%)]" />
 
-        <Sidebar collapsible="icon" className="z-10">
+      <Sidebar collapsible="icon" className="z-10">
           <SidebarHeader>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -158,7 +157,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </Sidebar>
 
         <SidebarInset className="bg-transparent">
-          <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/80 px-4 backdrop-blur-lg md:px-6">
+          <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 border-b border-border/60 bg-background/95 px-4 backdrop-blur-lg md:px-6">
             <SidebarTrigger className="cursor-pointer" />
             <Separator orientation="vertical" className="mr-1 h-5" />
             <div className="flex min-w-0 flex-col">
@@ -189,11 +188,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          <div className="relative z-10 flex flex-1 flex-col gap-6 p-4 md:p-6 lg:p-8">
+          <div className="relative z-10 flex flex-1 flex-col gap-6 overflow-auto pt-16 md:pt-0 p-4 md:p-6 lg:p-8">
             {children}
           </div>
         </SidebarInset>
-      </div>
     </SidebarProvider>
   );
 }
