@@ -44,3 +44,4 @@ next-env.d.ts
 
 graphify-out/cost.json
 graphify-out/manifest.json
+graphify-out/[0-9a-f]*.json
