@@ -43,7 +43,11 @@ export const metadata: Metadata = {
   manifest: "/logo/site.webmanifest",
   icons: {
     icon: [
-      { url: "/logo/favicon.svg", type: "image/svg+xml" },
+      {
+        url: "/logo/favicon-96x96.png",
+        sizes: "96x96",
+        type: "image/png",
+      },
       {
         url: "/logo/favicon-48x48.png",
         sizes: "48x48",

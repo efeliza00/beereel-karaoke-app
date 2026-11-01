@@ -4,7 +4,6 @@ import HoneycombRoom, {
   type HiveRoom,
 } from "@/components/landing/honeycomb-room";
 import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-ticker-05";
-import SwarmCursor from "@/components/SwarmCursor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -208,16 +207,7 @@ export default function BeereelLanding() {
   };
 
   return (
-    <SwarmCursor
-      color="#f59e0b"
-      accentColor="#fde68a"
-      count={6}
-      size={11}
-      glow={0.1}
-      trail={0.05}
-      speed={3}
-      className="min-h-dvh "
-    >
+    <div className="relative w-full min-h-dvh">
       <div className="min-h-screen text-[#3b2f21] selection:bg-amber-500 selection:text-slate-950 relative overflow-x-hidden font-sans">
         {/* Background Honeycomb Hex Pattern SVG */}
         <div className="absolute inset-0 opacity-15 pointer-events-none z-0">
@@ -879,6 +869,6 @@ export default function BeereelLanding() {
           </p>
         </footer>
       </div>
-    </SwarmCursor>
+    </div>
   );
 }
