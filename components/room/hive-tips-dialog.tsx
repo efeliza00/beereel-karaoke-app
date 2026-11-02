@@ -67,7 +67,7 @@ export default function HiveTipsDialog({
         showCloseButton={false}
       >
         <div className="flex flex-col items-center text-center gap-4">
-          <div className="flex items-center justify-center size-14 rounded-full bg-amber-400/10 text-amber-500">
+          <div className="flex items-center justify-center size-14 rounded-full bg-amber-400/10 text-[#b45309]">
             <HeartHandshake className="size-7" />
           </div>
 
@@ -75,7 +75,7 @@ export default function HiveTipsDialog({
             <DialogTitle className="text-xl text-[#3b2f21]">
               Keep the hive buzzing! 🐝
             </DialogTitle>
-            <DialogDescription className="text-sm leading-relaxed text-[#857558]">
+            <DialogDescription className="text-sm leading-relaxed text-[#3b2f21]/80">
               Beereel is free and runs on honey (and love). If you&apos;re
               enjoying the show, a small tip helps us keep the servers humming
               and the music playing. Every drop counts — no pressure, just
@@ -92,7 +92,7 @@ export default function HiveTipsDialog({
               className="rounded-xl"
               priority
             />
-            <p className="mt-2 text-[11px] font-bold uppercase tracking-widest text-amber-500/80">
+            <p className="mt-2 text-xs font-bold uppercase tracking-widest text-[#b45309]/80">
               Scan to tip the hive
             </p>
           </div>
@@ -103,7 +103,7 @@ export default function HiveTipsDialog({
               {...register("dontShow")}
               className="size-4 rounded border-[#eadfc9] bg-[#fdfaf3] accent-amber-500 cursor-pointer"
             />
-            <span className="text-xs font-medium text-[#857558]">
+            <span className="text-xs font-medium text-[#3b2f21]/80">
               Don&apos;t show this again
             </span>
           </label>
@@ -125,7 +125,7 @@ export default function HiveTipsDialog({
             <Button
               variant="ghost"
               onClick={handleClose}
-              className="w-full cursor-pointer text-[#857558] hover:text-[#3b2f21] hover:bg-[#efe6d2]/60 text-sm"
+              className="w-full cursor-pointer text-[#3b2f21]/80 hover:text-[#3b2f21] hover:bg-[#efe6d2]/60 text-sm"
             >
               Maybe later
             </Button>

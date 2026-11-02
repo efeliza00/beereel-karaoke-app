@@ -1,15 +1,17 @@
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Figtree, Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter, Playfair_Display } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const playfair = Playfair_Display({
   subsets: ["latin"],
+  style: "italic",
+  weight: "700",
+  variable: "--font-playfair",
 });
 
 const BASE_URL =
@@ -87,10 +89,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn(
         "h-full",
         "antialiased",
-        geistSans.variable,
         geistMono.variable,
         "font-sans",
-        figtree.variable,
+        inter.variable,
+        playfair.variable,
       )}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
@@ -100,7 +102,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           theme="light"
           toastOptions={{
             className:
-              "!bg-[#fdfaf3] !text-[#3b2f21] !rounded-2xl !border !border-[#eadfc9]",
+              "!bg-[#fdfaf3] !text-[#3b2f21] !border-4 !border-[#3b2f21]",
           }}
         />
         <TooltipProvider></TooltipProvider>

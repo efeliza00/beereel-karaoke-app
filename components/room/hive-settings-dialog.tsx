@@ -103,20 +103,20 @@ export default function HiveSettingsDialog({
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-[#3b2f21]">
-            <SlidersHorizontal size={16} className="text-amber-500" />
+            <SlidersHorizontal size={16} className="text-[#b45309]" />
             Hive Settings
           </DialogTitle>
-          <DialogDescription className="text-[#857558]">
+          <DialogDescription className="text-[#3b2f21]/80">
             As the host queen, you control how this hive operates. Changes are
             saved automatically.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2.5">
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-4 py-3">
             <div>
               <p className="text-sm font-bold text-[#3b2f21]">Guest Control</p>
-              <p className="text-[11px] text-[#857558]">
+              <p className="text-xs text-[#3b2f21]/80">
                 Guests can add songs to the queue
               </p>
             </div>
@@ -130,15 +130,15 @@ export default function HiveSettingsDialog({
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-4 py-3">
             <div>
               <p className="text-sm font-bold text-[#3b2f21] flex items-center gap-2">
                 Media Control
-                <span className="inline-flex items-center rounded-full border border-[#eadfc9] bg-[#efe6d2]/80 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#857558]">
+                <span className="inline-flex items-center rounded-full border-2 border-[#3b2f21] bg-[#efe6d2]/80 px-1.5 py-0.5 text-xs font-black uppercase tracking-wider text-[#3b2f21]/80">
                   Prefer disabled
                 </span>
               </p>
-              <p className="text-[11px] text-[#857558]">
+              <p className="text-xs text-[#3b2f21]/80">
                 Guests can play, pause, and seek video
               </p>
             </div>
@@ -152,10 +152,10 @@ export default function HiveSettingsDialog({
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-4 py-3">
             <div>
               <p className="text-sm font-bold text-[#3b2f21]">Queue Limit</p>
-              <p className="text-[11px] text-[#857558]">
+              <p className="text-xs text-[#3b2f21]/80">
                 Max songs allowed in the queue
               </p>
             </div>
@@ -169,10 +169,10 @@ export default function HiveSettingsDialog({
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-4 py-3">
             <div>
               <p className="text-sm font-bold text-[#3b2f21]">Guest Limit</p>
-              <p className="text-[11px] text-[#857558]">
+              <p className="text-xs text-[#3b2f21]/80">
                 Max bees allowed in the hive
               </p>
             </div>
@@ -186,10 +186,10 @@ export default function HiveSettingsDialog({
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-4 py-3">
             <div>
               <p className="text-sm font-bold text-[#3b2f21]">Auto Play Next</p>
-              <p className="text-[11px] text-[#857558]">
+              <p className="text-xs text-[#3b2f21]/80">
                 Start the next song automatically
               </p>
             </div>
@@ -203,12 +203,12 @@ export default function HiveSettingsDialog({
             />
           </div>
 
-          <div className="flex items-center justify-between gap-4 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-4 py-3">
             <div>
               <p className="text-sm font-bold text-[#3b2f21]">
                 Allow Duplicate Songs
               </p>
-              <p className="text-[11px] text-[#857558]">
+              <p className="text-xs text-[#3b2f21]/80">
                 Same song can be queued twice
               </p>
             </div>
@@ -237,7 +237,7 @@ export default function HiveSettingsDialog({
               >
                 Room Lock
               </p>
-              <p className="text-[11px] text-[#857558]">
+              <p className="text-xs text-[#3b2f21]/80">
                 Prevent new bees from joining
               </p>
             </div>

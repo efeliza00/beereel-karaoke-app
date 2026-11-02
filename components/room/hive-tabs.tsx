@@ -127,7 +127,7 @@ export default function HiveTabs({
   };
 
   return (
-    <div className="w-full h-full flex flex-col rounded-2xl border border-amber-500/25 bg-[#fdfaf3] overflow-hidden shadow-lg shadow-amber-500/5">
+    <div className="w-full h-full flex flex-col border-4 border-[#3b2f21] bg-[#fdfaf3] overflow-hidden">
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
@@ -135,7 +135,7 @@ export default function HiveTabs({
       >
         <TabsList
           variant="line"
-          className="shrink-0 flex w-full border-b border-amber-500/20 bg-transparent p-0! rounded-none h-auto! gap-0! justify-start!"
+          className="shrink-0 flex w-full border-b-4 border-[#3b2f21] bg-transparent p-0! rounded-none h-auto! gap-0! justify-start!"
           onMouseLeave={() => setHoveredTab(null)}
         >
           {tabs.map((tab) => {
@@ -154,7 +154,7 @@ export default function HiveTabs({
                   "border-transparent data-[state=active]:border-transparent shadow-none data-[state=active]:shadow-none after:hidden",
                   isActive
                     ? "text-[#b45309]"
-                    : "text-[#857558] hover:text-[#451a03]",
+                    : "text-[#3b2f21]/80 hover:text-[#451a03]",
                 )}
               >
                 <span className="relative flex items-center gap-1.5 px-3 py-3 sm:px-4 rounded-md z-10">
@@ -179,7 +179,7 @@ export default function HiveTabs({
                 {isActive && (
                   <motion.div
                     layoutId="hive-tabs-indicator"
-                    className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-amber-400"
+                    className="absolute bottom-[-1px] left-0 right-0 h-1 bg-[#b45309]"
                     initial={false}
                     transition={{
                       type: "spring",
@@ -200,11 +200,11 @@ export default function HiveTabs({
                 <div>
                   {currentSong && (
                     <div className="mb-6">
-                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#b45309] mb-2 flex items-center gap-1.5">
+                      <p className="text-xs font-black uppercase tracking-[0.2em] text-[#b45309] mb-2 flex items-center gap-1.5">
                         <Radio size={12} className="animate-pulse" /> Now
                         Playing
                       </p>
-                      <div className="flex items-center gap-3 rounded-2xl border border-[#f59e0b]/30 bg-[#f59e0b]/10 p-3">
+                      <div className="flex items-center gap-3 rounded-2xl border border-2 border-[#3b2f21] bg-[#f59e0b]/10 p-3">
                         {currentSong.thumbnail && (
                           <img
                             src={currentSong.thumbnail}
@@ -217,18 +217,18 @@ export default function HiveTabs({
                           <MarqueeText className="text-sm font-bold text-[#b45309]">
                             {currentSong.title}
                           </MarqueeText>
-                          <p className="text-[11px] text-[#b45309]/70 truncate">
+                          <p className="text-xs text-[#b45309]/70 truncate">
                             {currentSong.singer}
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#857558] mb-3">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#3b2f21]/80 mb-3">
                     Up Next · {queue.length}
                   </p>
                   {queue.length === 0 ? (
-                    <p className="mt-8 text-xs text-[#857558] text-center leading-relaxed">
+                    <p className="mt-8 text-xs text-[#3b2f21]/80 text-center leading-relaxed">
                       The queue is empty. Search for a song to get the hive
                       singing.
                     </p>
@@ -237,20 +237,20 @@ export default function HiveTabs({
                       {queue.map((song, i) => (
                         <li
                           key={song.videoId}
-                          className="flex items-center gap-3 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-3 py-2.5"
+                          className="flex items-center gap-3 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-3 py-2.5"
                         >
-                          <span className="size-9  shrink-0 rounded-full bg-[#f59e0b]/15 text-[#b45309] text-[11px] font-black flex items-center justify-center">
+                          <span className="size-9  shrink-0 rounded-full bg-[#f59e0b]/15 text-[#b45309] text-xs font-black flex items-center justify-center">
                             {i + 1}
                           </span>
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-bold text-[#3b2f21] truncate">
                               {song.title}
                             </p>
-                            <p className="text-[11px] text-[#857558] truncate">
+                            <p className="text-xs text-[#3b2f21]/80 truncate">
                               {song.channel}
                             </p>
                           </div>
-                          <span className="text-[10px] font-bold text-[#b45309]/80 truncate max-w-20 shrink-0">
+                          <span className="text-xs font-bold text-[#b45309]/80 truncate max-w-20 shrink-0">
                             {song.singer}
                           </span>
                           {canPlay && (
@@ -274,14 +274,14 @@ export default function HiveTabs({
               {activeTab === "search" && (
                 <div>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#857558] pointer-events-none" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#3b2f21]/80 pointer-events-none" />
                     <Input
                       type="text"
                       {...register("query")}
                       placeholder="Search YouTube songs, artists…"
                       disabled={!canAddToQueue}
                       aria-invalid={!!errors.query}
-                      className="w-full h-10 rounded-xl bg-[#fdfaf3] border border-[#eadfc9] pl-9 pr-9 text-sm text-[#3b2f21] placeholder:text-[#857558] outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-10 rounded-xl bg-[#fdfaf3] border-2 border-[#3b2f21] pl-9 pr-9 text-sm text-[#3b2f21] placeholder:text-[#3b2f21]/80 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     {queryInput && (
                       <button
@@ -291,20 +291,20 @@ export default function HiveTabs({
                           setDebouncedQuery("");
                         }}
                         aria-label="Clear search"
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#857558] hover:text-[#3b2f21] cursor-pointer"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#3b2f21]/80 hover:text-[#3b2f21] cursor-pointer"
                       >
                         ✕
                       </button>
                     )}
                   </div>
                   {errors.query && (
-                    <p className="mt-2 text-[11px] text-red-600">
+                    <p className="mt-2 text-xs text-red-600">
                       {errors.query.message}
                     </p>
                   )}
 
                   {!canAddToQueue && (
-                    <p className="mt-2 text-[11px] text-[#857558]">
+                    <p className="mt-2 text-xs text-[#3b2f21]/80">
                       The host has disabled guest song requests.
                     </p>
                   )}
@@ -323,11 +323,11 @@ export default function HiveTabs({
 
               {activeTab === "history" && (
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#857558] mb-3">
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#3b2f21]/80 mb-3">
                     Recently Played · {history.length}
                   </p>
                   {history.length === 0 ? (
-                    <p className="mt-8 text-xs text-[#857558] text-center leading-relaxed">
+                    <p className="mt-8 text-xs text-[#3b2f21]/80 text-center leading-relaxed">
                       Songs played in this hive will appear here.
                     </p>
                   ) : (
@@ -335,7 +335,7 @@ export default function HiveTabs({
                       {history.map((song) => (
                         <li
                           key={`${song.videoId}-${song.playedAt}`}
-                          className="flex items-center gap-3 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-3 py-2.5"
+                          className="flex items-center gap-3 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-3 py-2.5"
                         >
                           {song.thumbnail ? (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -346,7 +346,7 @@ export default function HiveTabs({
                               loading="lazy"
                             />
                           ) : (
-                            <span className="size-7 shrink-0 rounded-lg bg-[#efe6d2] text-[#857558] flex items-center justify-center">
+                            <span className="size-7 shrink-0 rounded-lg bg-[#efe6d2] text-[#3b2f21]/80 flex items-center justify-center">
                               <Music className="size-3.5" />
                             </span>
                           )}
@@ -354,7 +354,7 @@ export default function HiveTabs({
                             <p className="text-sm font-bold text-[#3b2f21] truncate">
                               {song.title}
                             </p>
-                            <p className="text-[11px] text-[#857558] truncate">
+                            <p className="text-xs text-[#3b2f21]/80 truncate">
                               Sung by {song.singer}
                             </p>
                           </div>
@@ -415,7 +415,7 @@ function SearchResults({
   if (!shouldFetch) {
     return (
       <div className="mt-6">
-        <h4 className="text-xs font-black uppercase tracking-wider text-amber-500 mb-3 px-1">
+        <h4 className="text-xs font-black uppercase tracking-wider text-[#b45309] mb-3 px-1">
           Trending on Beereel
         </h4>
         <ul className="space-y-2">
@@ -424,7 +424,7 @@ function SearchResults({
             return (
               <li
                 key={r.videoId}
-                className="flex items-center gap-3 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-2.5 py-2"
+                className="flex items-center gap-3 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-2.5 py-2"
               >
                 {r.thumbnail ? (
                   <img
@@ -435,14 +435,14 @@ function SearchResults({
                   />
                 ) : (
                   <span className="w-24 h-16 rounded-md bg-[#efe6d2] shrink-0 flex items-center justify-center">
-                    <Music className="size-5 text-[#857558]" />
+                    <Music className="size-5 text-[#3b2f21]/80" />
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold text-[#3b2f21] line-clamp-1">
                     {r.title}
                   </p>
-                  <p className="text-[11px] text-[#857558] truncate">
+                  <p className="text-xs text-[#3b2f21]/80 truncate">
                     {r.channel}
                   </p>
                 </div>
@@ -452,7 +452,7 @@ function SearchResults({
                   onClick={() => onQueueAdd({ ...r, singer: singerName })}
                   disabled={alreadyQueued || !enabled}
                   className={cn(
-                    "gap-1 shrink-0 h-7 px-2 text-[11px] font-black cursor-pointer",
+                    "gap-1 shrink-0 h-7 px-2 text-xs font-black cursor-pointer",
                     alreadyQueued
                       ? "opacity-40"
                       : "text-[#b45309] border-[#f59e0b]/40 hover:bg-[#f59e0b]/10 hover:text-[#451a03]",
@@ -486,7 +486,7 @@ function SearchResults({
         {[0, 1, 2].map((i) => (
           <li
             key={i}
-            className="flex items-center gap-3 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-2.5 py-2 animate-pulse"
+            className="flex items-center gap-3 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-2.5 py-2 animate-pulse"
           >
             <span className="w-16 h-9 rounded-md bg-[#efe6d2] shrink-0" />
             <span className="flex-1 space-y-1.5">
@@ -502,7 +502,7 @@ function SearchResults({
   const results = data?.results ?? [];
   if (results.length === 0) {
     return (
-      <p className="mt-6 text-xs text-[#857558] text-center leading-relaxed">
+      <p className="mt-6 text-xs text-[#3b2f21]/80 text-center leading-relaxed">
         No videos found for “{query}”.
       </p>
     );
@@ -516,7 +516,7 @@ function SearchResults({
         return (
           <li
             key={r.videoId}
-            className="flex items-center gap-3 rounded-xl border border-[#eadfc9] bg-[#fdfaf3]/60 px-2.5 py-2"
+            className="flex items-center gap-3 rounded-xl border-2 border-[#3b2f21] bg-[#fdfaf3]/60 px-2.5 py-2"
           >
             {r.thumbnail ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -528,14 +528,14 @@ function SearchResults({
               />
             ) : (
               <span className="w-24 h-16 rounded-md bg-[#efe6d2] shrink-0 flex items-center justify-center">
-                <Music className="size-5 text-[#857558]" />
+                <Music className="size-5 text-[#3b2f21]/80" />
               </span>
             )}
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-[#3b2f21] line-clamp-1">
                 {r.title}
               </p>
-              <p className="text-[11px] text-[#857558] truncate">
+              <p className="text-xs text-[#3b2f21]/80 truncate">
                 {r.channel}
                 {r.length ? ` · ${r.length}` : ""}
               </p>
@@ -546,7 +546,7 @@ function SearchResults({
               onClick={() => onQueueAdd({ ...r, singer: singerName })}
               disabled={alreadyQueued || !enabled}
               className={cn(
-                "gap-1 shrink-0 h-7 px-2 text-[11px] font-black cursor-pointer",
+                "gap-1 shrink-0 h-7 px-2 text-xs font-black cursor-pointer",
                 alreadyQueued
                   ? "opacity-40"
                   : "text-[#b45309] border-[#f59e0b]/40 hover:bg-[#f59e0b]/10 hover:text-[#451a03]",

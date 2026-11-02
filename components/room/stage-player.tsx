@@ -313,7 +313,7 @@ export default function StagePlayer({
 
   if (!video) {
     return (
-      <div className="relative w-full aspect-video bg-black overflow-hidden group shadow-2xl shadow-amber-500/10">
+      <div className="relative w-full aspect-video bg-black overflow-hidden group border-4 border-[#3b2f21]">
         <FaultyTerminal
           className="absolute inset-0 w-full h-full"
           style={{
@@ -399,7 +399,7 @@ export default function StagePlayer({
     <div className="space-y-2">
       <div
         ref={frameRef}
-        className="relative w-full aspect-video bg-black overflow-hidden shadow-2xl shadow-amber-500/10"
+        className="relative w-full aspect-video bg-black overflow-hidden border-4 border-[#3b2f21]"
       >
         <VideoPlayer
           key={video.videoId}

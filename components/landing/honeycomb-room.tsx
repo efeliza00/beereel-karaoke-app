@@ -1,9 +1,6 @@
 "use client";
 
 import { BeeIcon } from "@/components/ui/bee-icon";
-import { cn } from "@/lib/utils";
-import { Music } from "lucide-react";
-import { motion } from "motion/react";
 import useSWR from "swr";
 
 export type HiveRoom = {
@@ -15,22 +12,16 @@ export type HiveRoom = {
   nowSinging: string;
   host: string;
   avatar: string;
-  gradient: string;
-  glow: string;
-  border: string;
   badge: string;
   activeWave?: boolean;
 };
 
-/** Regular pointy-top hexagon */
-const HEX = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
-
 export default function HoneycombRoom({
   room,
-  index,
+  onJoin,
 }: {
   room: HiveRoom;
-  index: number;
+  onJoin?: (roomId: string) => void;
 }) {
   // Live cells poll their room snapshot for the current track
   const { data: state } = useSWR<{
@@ -45,66 +36,37 @@ export default function HoneycombRoom({
     : room.nowSinging;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.85 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.08, type: "spring", stiffness: 200 }}
-      whileHover={{ scale: 1.05, zIndex: 20 }}
-      className={cn(
-        "relative shrink-0",
-        // stagger alternate columns into a honeycomb packing
-        index % 2 === 1 && "sm:mt-12",
-      )}
-      style={{ filter: "drop-shadow(0 10px 24px rgba(245,158,11,0.18))" }}
-    >
-      {/* Gradient border layer */}
-      <div
-        style={{ clipPath: HEX }}
-        className={cn(
-          "w-44 h-[204px] sm:w-56 sm:h-[258px] bg-gradient-to-b p-[2.5px] transition-all duration-300",
-          room.gradient,
-        )}
-      >
-        {/* Inner cell */}
-        <div
-          style={{ clipPath: HEX }}
-          className="w-full h-full backdrop-blur-xl"
-        >
-          <div className="h-full flex flex-col items-center justify-center text-center px-7 pt-7 pb-9 gap-1.5 sm:px-8 sm:gap-2">
-            {/* Badge */}
-            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#fde68a] text-[#b45309] whitespace-nowrap">
-              {room.badge}
-            </span>
-
-            {/* Live bees */}
-            <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-[#857558] font-bold">
-              <BeeIcon size={13} className="text-[#b45309]" />
-              {room.singers} Bees
-              <span className="size-1.5 rounded-full bg-red-400 animate-pulse" />
-            </span>
-
-            {/* Name */}
-            <h3 className="text-sm sm:text-base font-extrabold text-[#3b2f21] leading-tight">
-              {room.name}
-            </h3>
-            <p className="text-[10px] sm:text-[11px] font-medium text-[#857558] -mt-1">
-              {room.genre}
-            </p>
-
-            {/* Now singing */}
-            <div className="w-full bg-white/70 rounded-lg px-2.5 py-1.5 border border-[#eadfc9] mt-1">
-              <div className="flex items-center justify-center gap-1 text-[8px] uppercase tracking-wider text-[#b45309] font-bold mb-0.5">
-                <Music className="w-2.5 h-2.5 animate-pulse" />
-                Now Singing
-              </div>
-              <div className="text-[11px] sm:text-xs font-bold text-[#3b2f21] truncate">
-                {nowSinging}
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="flex flex-wrap items-center gap-x-8 gap-y-2 border-b-4 border-[#3b2f21] px-4 py-4 last:border-b-0 sm:px-6">
+      <div className="w-32 shrink-0">
+        <p className="text-sm font-black uppercase text-[#b45309]">
+          {room.badge}
+        </p>
+        <p className="inline-flex items-center gap-1 text-sm font-bold">
+          <BeeIcon size={14} />
+          {room.singers} Bees
+        </p>
       </div>
-    </motion.div>
+
+      <div className="min-w-0 flex-[999_1_16rem]">
+        <h3 className="truncate text-2xl font-black uppercase leading-tight tracking-tight md:text-4xl">
+          {nowSinging}
+        </h3>
+      </div>
+
+      <div className="min-w-0 flex-[1_1_12rem]">
+        <p className="truncate font-bold">{room.name}</p>
+        <p className="truncate text-sm font-medium">{room.genre}</p>
+      </div>
+
+      {room.roomId && onJoin && (
+        <button
+          type="button"
+          onClick={() => onJoin(room.roomId as string)}
+          className="min-h-11 cursor-pointer bg-[#3b2f21] px-6 font-black uppercase text-[#fdfaf3] hover:bg-[#b45309]"
+        >
+          Join
+        </button>
+      )}
+    </div>
   );
 }

@@ -244,17 +244,17 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             </div>
           )}
           <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#b45309]">
+            <p className="text-xs font-black uppercase tracking-widest text-[#b45309]">
               Now Playing
             </p>
             <MarqueeText className="text-lg font-bold text-[#3b2f21]">
               {item.title}
             </MarqueeText>
-            <p className="text-[#857558]/80 text-sm font-medium truncate">
+            <p className="text-[#3b2f21]/80/80 text-sm font-medium truncate">
               {item.channel}
             </p>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-[11px] text-red-700 font-semibold border border-red-500/20 uppercase tracking-wider shrink-0">
+          <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-xs text-red-700 font-semibold border border-red-500/20 uppercase tracking-wider shrink-0">
             <span className="size-1.5 rounded-full bg-red-500 animate-pulse" />
             Live
           </span>
@@ -289,13 +289,13 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             </div>
           )}
           <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-[#b45309]">
+            <p className="text-xs font-black uppercase tracking-widest text-[#b45309]">
               Up Next
             </p>
             <MarqueeText className="text-lg font-bold text-[#3b2f21]">
               {item.title}
             </MarqueeText>
-            <p className="text-[#857558]/80 text-sm font-medium truncate">
+            <p className="text-[#3b2f21]/80/80 text-sm font-medium truncate">
               {item.singer} is on the mic
             </p>
           </div>
@@ -667,12 +667,12 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
       {!isBlocked && <HiveTipsDialog reopenSignal={tipsReopen} />}
       {isBlocked && (
         <div className="fixed inset-0 bg-[#f7f1e4]/90 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#fdfaf3] border border-amber-500/25 rounded-2xl p-8 text-center max-w-sm shadow-2xl shadow-amber-500/10">
-            <Lock className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-            <h2 className="text-xl font-black text-amber-500 mb-2">
+          <div className="bg-[#fdfaf3] border-4 border-[#3b2f21] p-8 text-center max-w-sm">
+            <Lock className="w-12 h-12 text-[#b45309] mx-auto mb-4" />
+            <h2 className="text-xl font-black text-[#b45309] mb-2">
               {settings.roomLocked ? "This Hive is Locked" : "Hive is Full"}
             </h2>
-            <p className="text-sm text-[#857558] mb-6">
+            <p className="text-sm text-[#3b2f21]/80 mb-6">
               {settings.roomLocked
                 ? "The host has locked this hive room."
                 : `Capacity reached (${settings.guestLimit} bee${
@@ -681,7 +681,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
             </p>
             <Button
               onClick={() => router.push("/")}
-              className="w-full bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-[#3b2f21] font-black hover:from-amber-300 hover:to-amber-400 cursor-pointer"
+              className="w-full bg-[#f59e0b] text-[#3b2f21] font-black uppercase border-4 border-[#3b2f21] hover:bg-[#fde68a] cursor-pointer"
             >
               Back to Landing
             </Button>
@@ -690,15 +690,15 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
       )}
 
       {/* Room Navbar */}
-      <header className="sticky top-0 z-40 border-b border-amber-500/20 bg-[#fdfaf3]/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b-4 border-[#3b2f21] bg-[#fdfaf3]">
         <div className="w-full px-3 sm:px-4 md:px-6 h-14 md:h-16 flex items-center justify-between gap-1.5 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <Hexagon className="w-7 h-7 sm:w-8 sm:h-8 text-amber-400 shrink-0" />
+            <Hexagon className="w-7 h-7 sm:w-8 sm:h-8 text-[#b45309] shrink-0" />
             <div className="min-w-0">
-              <h1 className="text-sm sm:text-base md:text-lg font-black leading-tight truncate">
+              <h1 className="text-sm sm:text-base md:text-xl font-black uppercase tracking-tight leading-tight truncate">
                 Hive Room: {roomId}
               </h1>
-              <p className="text-[10px] sm:text-[11px] text-[#857558] flex items-center gap-1 font-bold truncate">
+              <p className="text-xs sm:text-xs text-[#3b2f21]/80 flex items-center gap-1 font-bold truncate">
                 Host:{" "}
                 {host ? (
                   <span className="inline-flex items-center gap-1 text-[#b45309]">
@@ -749,13 +749,13 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                   />
                 }
               >
-                <BeeIcon size={16} className="text-amber-400" />
+                <BeeIcon size={16} className="text-[#b45309]" />
                 {onlineCount}
               </DialogTrigger>
               <DialogContent className="data-open:slide-in-from-top-8 data-closed:slide-out-to-top-8 data-open:zoom-in-100 data-closed:zoom-out-100 duration-300 [[data-slot=dialog-overlay]:has(~_&)]:duration-300">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
-                    <BeeIcon size={16} className="text-amber-400" />
+                    <BeeIcon size={16} className="text-[#b45309]" />
                     Bees in the Hive
                   </DialogTitle>
                   <DialogDescription>
@@ -769,15 +769,15 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                       key={m.key}
                       className={`flex items-center gap-3 rounded-xl border px-3 py-2 ${
                         m.isHost
-                          ? "border-[#f59e0b]/50 bg-[#f59e0b]/10"
+                          ? "border-2 border-[#3b2f21] bg-[#f59e0b]/10"
                           : "border-[#eadfc9] bg-[#fdfaf3]/60"
                       }`}
                     >
                       <span
-                        className={`size-8 shrink-0 rounded-full border flex items-center justify-center text-[11px] font-black ${
+                        className={`size-8 shrink-0 rounded-full border flex items-center justify-center text-xs font-black ${
                           m.isHost
                             ? "border-[#f59e0b] bg-[#f59e0b]/20 text-[#b45309]"
-                            : "border-[#eadfc9] bg-[#efe6d2] text-[#857558]"
+                            : "border-[#eadfc9] bg-[#efe6d2] text-[#3b2f21]/80"
                         }`}
                       >
                         {initials(m.name)}
@@ -787,7 +787,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                           {m.isHost && (
                             <Crown
                               size={12}
-                              className="text-amber-500 shrink-0"
+                              className="text-[#b45309] shrink-0"
                             />
                           )}
                           <span
@@ -798,12 +798,12 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                             {m.name}
                           </span>
                           {m.isMe && (
-                            <span className="text-[10px] uppercase tracking-wider text-amber-500">
+                            <span className="text-xs uppercase tracking-wider text-[#b45309]">
                               (You)
                             </span>
                           )}
                         </p>
-                        <p className="text-[11px] text-[#857558] font-medium">
+                        <p className="text-xs text-[#3b2f21]/80 font-medium">
                           {m.joinedAt
                             ? `Joined ${new Date(m.joinedAt).toLocaleTimeString(
                                 [],
@@ -815,7 +815,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                       {m.isHost && (
                         <Badge
                           variant="outline"
-                          className="text-[#b45309] border-[#f59e0b]/40 shrink-0 text-[10px]"
+                          className="text-[#b45309] border-[#f59e0b]/40 shrink-0 text-xs"
                         >
                           HOST
                         </Badge>
@@ -829,7 +829,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
               variant="outline"
               size="sm"
               onClick={() => setTipsReopen((n) => n + 1)}
-              className="gap-1.5 cursor-pointer border-[#f59e0b]/40 text-[#b45309] hover:bg-[#f59e0b]/10 hover:text-[#451a03] px-2.5 sm:px-3"
+              className="gap-1.5 cursor-pointer border-2 border-[#3b2f21] text-[#3b2f21] hover:bg-[#fde68a] px-2.5 sm:px-3"
             >
               <HeartHandshake size={14} />
               <span className="hidden xs:inline sm:inline">Tip</span>
@@ -857,7 +857,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
                   </div>
                   <DialogHeader className="items-center">
                     <DialogTitle>Leave the hive?</DialogTitle>
-                    <DialogDescription className="text-[#857558]">
+                    <DialogDescription className="text-[#3b2f21]/80">
                       You will stop watching the performance. The queue stays
                       alive — you can rejoin anytime.
                     </DialogDescription>
@@ -895,7 +895,18 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
       {/* 3/4 Stage + 1/4 Reserved Panel */}
       <div className="flex-1 w-full grid grid-cols-1 lg:grid-cols-[3fr_1fr] gap-5 px-4 pt-0 pb-4 md:p-6 lg:px-6 items-start">
         {/* Video Section */}
-        <section className="space-y-2 min-w-0 -mx-4 md:mx-0">
+        <section className="space-y-4 min-w-0 -mx-4 md:mx-0">
+          {currentSong && (
+            <div className="px-4 pt-4 md:px-0 md:pt-0">
+              <p className="text-sm font-bold uppercase">
+                Now singing: {currentSong.singer}
+              </p>
+              <h2 className="line-clamp-2 text-[clamp(1.75rem,4vw,4.5rem)] font-black uppercase leading-[0.95] tracking-tighter text-[#b45309]">
+                {currentSong.title}
+              </h2>
+            </div>
+          )}
+
           {/* Video Player Area */}
           <StagePlayer
             video={currentSong}
@@ -1025,7 +1036,7 @@ export default function BeereelRoom({ roomId }: { roomId: string }) {
         <div className="fixed bottom-4 inset-x-0 z-40 flex justify-center px-4 pointer-events-none md:hidden">
           <ReactionPicker
             onReact={handleReact}
-            className="pointer-events-auto border-[#eadfc9] bg-[#fdfaf3]/90 shadow-2xl shadow-amber-500/25"
+            className="pointer-events-auto"
           />
         </div>
       </div>

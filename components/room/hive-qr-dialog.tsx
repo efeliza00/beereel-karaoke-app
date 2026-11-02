@@ -50,14 +50,14 @@ export default function HiveQrDialog({
       </DialogTrigger>
       <DialogContent className="data-open:slide-in-from-top-8 data-closed:slide-out-to-top-8 data-open:zoom-in-100 data-closed:zoom-out-100 duration-300 [[data-slot=dialog-overlay]:has(~_&)]:duration-300 bg-[#fdfaf3] border-amber-500/25">
         <div className="flex flex-col items-center text-center gap-4">
-          <div className="flex items-center justify-center size-12 rounded-full bg-amber-500/10 text-amber-500">
+          <div className="flex items-center justify-center size-12 rounded-full bg-amber-500/10 text-[#b45309]">
             <QrCodeIcon size={20} />
           </div>
           <DialogHeader className="items-center">
             <DialogTitle className="text-[#3b2f21]">
               Scan to Join the Hive
             </DialogTitle>
-            <DialogDescription className="text-[#857558]">
+            <DialogDescription className="text-[#3b2f21]/80">
               Point your camera at the code to jump straight into room{" "}
               <span className="font-mono font-bold text-[#b45309]">
                 {roomId}
@@ -72,7 +72,7 @@ export default function HiveQrDialog({
               <p className="text-sm font-black text-red-700">
                 {locked ? "This hive is locked" : "This hive is full"}
               </p>
-              <p className="text-xs text-[#857558] mt-1.5 leading-relaxed">
+              <p className="text-xs text-[#3b2f21]/80 mt-1.5 leading-relaxed">
                 New bees can&apos;t join right now
                 {capacity !== undefined && !locked
                   ? ` — capacity is ${capacity}.`
@@ -84,10 +84,10 @@ export default function HiveQrDialog({
             </div>
           ) : (
             <>
-              <div className="rounded-2xl border border-[#eadfc9] bg-white p-3 shadow-sm">
+              <div className="rounded-2xl border-2 border-[#3b2f21] bg-white p-3 shadow-sm">
                 {joinUrl ? <QRCodeSVG value={joinUrl} size={192} /> : null}
               </div>
-              <p className="text-xs font-mono text-[#857558] break-all">
+              <p className="text-xs font-mono text-[#3b2f21]/80 break-all">
                 {joinUrl}
               </p>
             </>
